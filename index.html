@@ -1,220 +1,225 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🦇 Gothic Post-Punk Player</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+import React, { useState, useEffect } from 'react';
+import { Play, SkipForward, SkipBack, Music, Volume2, Disc, Github, Heart } from 'lucide-react';
 
-    <style>
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.05); }
-        }
-        .pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+// Google Fonts import handled via style tag in component for single file requirement
+const FontStyles = () => (
+  <style>
+    {`
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+      
+      .gothic-font {
+        font-family: 'Cinzel', serif;
+      }
+      .serif-font {
+        font-family: 'Playfair Display', serif;
+      }
+      
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1a0505; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4a0404; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #8a0000; 
+      }
 
-        @keyframes bounce-slow {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        .bounce-slow { animation: bounce-slow 1s ease-in-out infinite; }
+      .crt-overlay {
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        background-size: 100% 2px, 3px 100%;
+        pointer-events: none;
+      }
+    `}
+  </style>
+);
 
-        .scrollbar-custom::-webkit-scrollbar { width: 8px; }
-        .scrollbar-custom::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-        }
-        .scrollbar-custom::-webkit-scrollbar-thumb {
-            background: var(--scroll-color);
-            border-radius: 10px;
-        }
-        * {
-            transition: background-color 0.5s ease, border-color 0.5s ease;
-        }
-    </style>
-</head>
-<body class="m-0 p-0">
+const videos = [
+  { id: 'tBpQ1f77PDA', title: 'The Perfect Girl' },
+  { id: 'h4Jnv-pb6sk', title: 'Silhouette' },
+  { id: 'A_ZJnKoMoBA', title: 'After Dark' },
+  { id: '9CvpeDHgCpo', title: 'Goth' },
+  { id: 'LHUz8vA_wCM', title: 'Sudno' },
+  { id: 'bIGoN8_vv_Y', title: 'Little Dark Age' },
+  { id: 'npQwX2X3WBE', title: 'Resonance' },
+  { id: 'qLQ0PZ-Zwc8', title: 'Vampire' },
+  { id: 'bjxfcGJM3V4', title: 'Dark Beach' },
+  { id: 'DOzdBjtA9H0', title: 'Nightcall' },
+  { id: 'qFtiH1bZuJ0', title: 'SimpsonWave' },
+  { id: 'FaHMRB30HmA', title: 'Gallowdance' },
+  { id: 'VdAlPCrndT8', title: 'Crimson' },
+  { id: 'gebchYvcp2s', title: 'Shadows' },
+  { id: '77GxLUUEcHo', title: 'Insomnia' },
+  { id: 'bYM8iPn47yE', title: 'Eternal' },
+  { id: 'bpxKOOUhLs8', title: 'Void' }
+];
 
-<!-- PLAYER DE ÁUDIO REAL E FUNCIONAL -->
-<audio id="audioPlayer"></audio>
+export default function App() {
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-<div id="app"></div>
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-<script>
+  const handleVideoSelect = (index) => {
+    setCurrentVideoIndex(index);
+    setIsPlaying(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-    /* SEUS ARQUIVOS DE ÁUDIO — SUBSTITUIR AQUI */
-    const tracks = [
-        { id: 1, title: "Shadowlands",     artist: "The Cure",       duration: "4:23", url: "musicas/shadowlands.mp3", color: "#DC143C" },
-        { id: 2, title: "Melancholic Dreams", artist: "Joy Division", duration: "3:58", url: "musicas/melancholic.mp3", color: "#8B008B" },
-        { id: 3, title: "Nocturnal Whispers", artist: "Bauhaus", duration: "5:12", url: "musicas/nocturnal.mp3", color: "#6A0DAD" },
-    ];
+  const handleNext = () => {
+    setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
+    setIsPlaying(true);
+  };
 
-    let currentTrack = 0;
-    let isPlaying = false;
-    let theme = 'dark';
-    let audioInterval;
+  const handlePrev = () => {
+    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+    setIsPlaying(true);
+  };
 
-    const audio = document.getElementById("audioPlayer");
+  if (!mounted) return null;
 
-    /* CARREGAR MÚSICA CORRETA */
-    function loadTrack() {
-        audio.src = tracks[currentTrack].url;
-        audio.load();
-        if (isPlaying) {
-            audio.play();
-        }
-    }
+  const currentVideo = videos[currentVideoIndex];
 
-    audio.onended = () => nextTrack();
+  return (
+    <div className="min-h-screen bg-[#050101] text-[#e0e0e0] font-sans relative overflow-x-hidden selection:bg-[#8a0000] selection:text-white">
+      <FontStyles />
+      
+      {/* Background Ambience */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#4a0404] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2d004d] rounded-full blur-[120px] opacity-20 animate-pulse delay-1000"></div>
+        <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-[#8a0000] rounded-full blur-[150px] opacity-10"></div>
+        <div className="crt-overlay absolute inset-0 z-50 opacity-20"></div>
+      </div>
 
-    /* VISUAL DO PLAYER */
-    function getThemeClasses() {
-        const themes = {
-            dark:   { bg:'bg-gradient-to-br from-gray-900 via-black to-gray-900', card:'bg-gray-800/50', text:'text-gray-100', secondary:'text-gray-400' },
-            light:  { bg:'bg-gray-100', card:'bg-white', text:'text-gray-900', secondary:'text-gray-600' },
-            purple: { bg:'bg-gradient-to-br from-purple-950 via-purple-900 to-black', card:'bg-purple-900/50', text:'text-purple-50', secondary:'text-purple-300' }
-        };
-        return themes[theme];
-    }
+      <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
+        
+        {/* Header */}
+        <header className="mb-8 text-center border-b border-[#3d0a0a] pb-6">
+          <h1 className="gothic-font text-5xl md:text-7xl bg-gradient-to-r from-[#ff0033] via-[#b026ff] to-[#ff0033] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(138,0,0,0.5)] tracking-wider">
+            NOCTURNE
+          </h1>
+          <p className="serif-font italic text-[#a37996] mt-2 tracking-widest text-sm md:text-base">
+            SINFONIA DAS SOMBRAS
+          </p>
+        </header>
 
-    function updateAudioBars() {
-        const bars = document.querySelectorAll(".audio-bar");
-        bars.forEach(b => {
-            const h = Math.random() * 100;
-            b.style.height = isPlaying ? `${Math.max(h, 10)}%` : "5%";
-            b.style.opacity = isPlaying ? "0.9" : "0.2";
-        });
-    }
-
-    function togglePlay() {
-        isPlaying = !isPlaying;
-        if (isPlaying) {
-            audio.play();
-            audioInterval = setInterval(updateAudioBars, 150);
-        } else {
-            audio.pause();
-            clearInterval(audioInterval);
-        }
-        render();
-    }
-
-    function nextTrack() {
-        currentTrack = (currentTrack + 1) % tracks.length;
-        loadTrack();
-        render();
-    }
-
-    function prevTrack() {
-        currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
-        loadTrack();
-        render();
-    }
-
-    function selectTrack(index) {
-        currentTrack = index;
-        loadTrack();
-        isPlaying = true;
-        audio.play();
-        render();
-    }
-
-    function changeTheme(newTheme) {
-        theme = newTheme;
-        render();
-    }
-
-    function render() {
-        const t = tracks[currentTrack];
-        const c = t.color;
-        const themeClasses = getThemeClasses();
-
-        document.documentElement.style.setProperty("--scroll-color", c);
-
-        document.getElementById("app").innerHTML = `
-            <div class="min-h-screen ${themeClasses.bg} ${themeClasses.text} p-6">
-
-                <!-- Troca de Tema -->
-                <div class="flex justify-end gap-3 mb-6">
-                    <button onclick="changeTheme('dark')" class="w-10 h-10 rounded-full bg-black border-4 ${theme==='dark'?'border-red-500 scale-110':'border-gray-700'}"></button>
-                    <button onclick="changeTheme('light')" class="w-10 h-10 rounded-full bg-white border-4 ${theme==='light'?'border-purple-500 scale-110':'border-gray-300'}"></button>
-                    <button onclick="changeTheme('purple')" class="w-10 h-10 rounded-full bg-purple-700 border-4 ${theme==='purple'?'border-yellow-400 scale-110':'border-purple-700'}"></button>
-                </div>
-
-                <div class="max-w-5xl mx-auto">
-
-                    <!-- CARD PRINCIPAL -->
-                    <div class="${themeClasses.card} backdrop-blur-xl rounded-3xl shadow-2xl p-8 border-4"
-                        style="border-color:${c}; box-shadow:0 0 60px ${c}60">
-
-                        <!-- VISUALIZER -->
-                        <div class="relative w-80 h-80 mx-auto mb-8 rounded-3xl overflow-hidden shadow-2xl"
-                             style="background: radial-gradient(circle, ${c}60, ${c}20, #00000090)">
-
-                            <div class="absolute inset-0 flex items-end justify-center gap-1 p-6">
-                                ${Array(20).fill(0).map(() =>
-                                    `<div class="audio-bar flex-1 rounded-t-xl transition-all duration-150"
-                                        style="height:5%; background:${c}; opacity:.2"></div>`
-                                ).join("")}
-                            </div>
-
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <svg class="${isPlaying?'pulse-glow':''}" width="120" height="120"
-                                     xmlns="http://www.w3.org/2000/svg"
-                                     fill="none" stroke="${c}" stroke-width="2"
-                                     style="filter:drop-shadow(0 0 30px ${c})">
-                                    <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>
-                                    <path d="M8 20v2h8v-2"/>
-                                    <path d="m12.5 17-.5-1-.5 1h1z"/>
-                                    <path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/>
-                                </svg>
-                            </div>
-                        </div>
-
-                        <!-- INFORMAÇÕES -->
-                        <div class="text-center mb-8">
-                            <h1 class="text-4xl font-bold mb-3" style="color:${c}">${t.title}</h1>
-                            <p class="text-xl ${themeClasses.secondary}">${t.artist}</p>
-                            <p class="text-sm ${themeClasses.secondary} opacity-70">${t.duration}</p>
-                        </div>
-
-                        <!-- CONTROLES -->
-                        <div class="flex items-center justify-center gap-6 mb-8">
-                            <button onclick="prevTrack()" class="p-5 rounded-full bg-gray-700/80 hover:bg-gray-600">
-                                ◀◀
-                            </button>
-
-                            <button onclick="togglePlay()"
-                                class="p-8 rounded-full"
-                                style="background:${c}; box-shadow:0 0 40px ${c}">
-                                ${isPlaying ? "II" : "▶"}
-                            </button>
-
-                            <button onclick="nextTrack()" class="p-5 rounded-full bg-gray-700/80 hover:bg-gray-600">
-                                ▶▶
-                            </button>
-                        </div>
-
-                        <!-- LISTA DE FAIXAS -->
-                        <div class="max-h-80 overflow-y-auto scrollbar-custom p-4">
-                            ${tracks.map((track, i) => `
-                                <div onclick="selectTrack(${i})"
-                                    class="p-4 mb-2 rounded-2xl cursor-pointer border-2 
-                                           ${i===currentTrack?'bg-black/40 border-red-500':'bg-black/20 border-gray-700'}">
-                                    <p class="text-lg font-bold" style="color:${track.color}">${track.title}</p>
-                                    <p class="text-sm opacity-80">${track.artist}</p>
-                                </div>
-                            `).join("")}
-                        </div>
-
-                    </div>
-                </div>
+        {/* Main Player Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+          
+          {/* Video Player */}
+          <div className="lg:col-span-2 space-y-4">
+            <div className="relative w-full aspect-video bg-black rounded-sm border-2 border-[#2d0a1e] shadow-[0_0_30px_rgba(45,0,20,0.6)] overflow-hidden group">
+              <iframe
+                className="w-full h-full object-cover"
+                src={`https://www.youtube.com/embed/${currentVideo.id}?autoplay=1&rel=0&modestbranding=1`}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+              <div className="absolute inset-0 border-[1px] border-[#ffffff10] pointer-events-none"></div>
             </div>
-        `;
-    }
 
-    loadTrack();
-    render();
+            {/* Now Playing Info */}
+            <div className="bg-[#0f0205] border border-[#2e0212] p-6 rounded-sm shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4 w-full">
+                <div className={`p-3 rounded-full bg-[#1a0505] border border-[#3d0a0a] ${isPlaying ? 'animate-spin-slow' : ''}`}>
+                  <Disc className="w-6 h-6 text-[#ff0033]" />
+                </div>
+                <div className="overflow-hidden">
+                  <h2 className="serif-font text-2xl text-[#decbcb] truncate">{currentVideo.title || `Track ${currentVideoIndex + 1}`}</h2>
+                  <p className="text-xs text-[#804d5e] uppercase tracking-widest">Reproduzindo Agora</p>
+                </div>
+              </div>
+              
+              {/* Controls */}
+              <div className="flex items-center gap-4">
+                <button 
+                  onClick={handlePrev}
+                  className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
+                >
+                  <SkipBack className="w-6 h-6" />
+                </button>
+                <div className="w-px h-8 bg-[#2e0212]"></div>
+                <button 
+                  onClick={handleNext}
+                  className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
+                >
+                  <SkipForward className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+          </div>
 
-</script>
-</body>
-</html>
+          {/* Playlist Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="bg-[#0a0103]/80 backdrop-blur-sm border border-[#2e0212] h-[600px] flex flex-col rounded-sm">
+              <div className="p-4 border-b border-[#2e0212] bg-[#120205]">
+                <h3 className="gothic-font text-xl text-[#b026ff] flex items-center gap-2">
+                  <Music className="w-4 h-4" /> Playlist Gótica
+                </h3>
+                <p className="text-xs text-gray-500 mt-1">{videos.length} Faixas Encontradas</p>
+              </div>
+              
+              <div className="overflow-y-auto flex-1 p-2 space-y-2">
+                {videos.map((video, index) => (
+                  <div 
+                    key={video.id}
+                    onClick={() => handleVideoSelect(index)}
+                    className={`
+                      group flex items-center gap-3 p-2 rounded-sm cursor-pointer border border-transparent transition-all duration-300
+                      ${currentVideoIndex === index 
+                        ? 'bg-[#1f050a] border-[#4a0404] shadow-[0_0_10px_rgba(138,0,0,0.2)]' 
+                        : 'hover:bg-[#120408] hover:border-[#2e0212]'}
+                    `}
+                  >
+                    <div className="relative w-16 h-12 flex-shrink-0 overflow-hidden rounded-sm border border-[#1f050a]">
+                      <img 
+                        src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`} 
+                        alt="thumbnail" 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                      />
+                      {currentVideoIndex === index && (
+                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                          <Volume2 className="w-4 h-4 text-[#ff0033] animate-pulse" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <p className={`serif-font text-sm truncate ${currentVideoIndex === index ? 'text-[#ffb3c1]' : 'text-[#a0a0a0] group-hover:text-[#decbcb]'}`}>
+                        {video.title || `Ritual ${index + 1}`}
+                      </p>
+                      <p className="text-[10px] text-[#5c3a4a] uppercase tracking-wider group-hover:text-[#b026ff] transition-colors">
+                        {currentVideoIndex === index ? 'Tocando...' : 'Assistir'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Footer */}
+        <footer className="text-center py-8 border-t border-[#3d0a0a] mt-8">
+          <div className="flex justify-center items-center gap-2 text-[#5c3a4a] text-sm hover:text-[#ff0033] transition-colors cursor-default">
+            <Heart className="w-3 h-3" />
+            <span className="serif-font tracking-widest">CRIADO NA ESCURIDÃO</span>
+            <Heart className="w-3 h-3" />
+          </div>
+        </footer>
+
+      </div>
+    </div>
+  );
+}
