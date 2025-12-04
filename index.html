@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nocturne Player</title>
+    <title>Vampire Waves</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- React & ReactDOM -->
@@ -79,7 +79,6 @@
           const playerRef = useRef(null);
           const playerContainerRef = useRef(null);
           
-          // Referências para o callback do YouTube API (que roda fora do React loop)
           const isAutoPlayRef = useRef(isAutoPlay);
           const currentVideoIndexRef = useRef(currentVideoIndex);
 
@@ -88,7 +87,6 @@
             currentVideoIndexRef.current = currentVideoIndex;
           }, [isAutoPlay, currentVideoIndex]);
 
-          // Carregar API do YouTube
           useEffect(() => {
             if (!window.YT) {
               const tag = document.createElement('script');
@@ -117,7 +115,6 @@
             };
           }, []);
 
-          // Atualizar vídeo quando o índice muda
           useEffect(() => {
             if (playerRef.current && playerRef.current.loadVideoById) {
               playerRef.current.loadVideoById(videos[currentVideoIndex].id);
@@ -126,23 +123,21 @@
           }, [currentVideoIndex]);
 
           const onPlayerStateChange = (event) => {
-             // YT.PlayerState.ENDED é 0
              if (event.data === 0) {
                setIsPlaying(false);
                if (isAutoPlayRef.current) {
                  const nextIndex = (currentVideoIndexRef.current + 1) % videos.length;
                  setCurrentVideoIndex(nextIndex);
                }
-             } else if (event.data === 1) { // PLAYING
+             } else if (event.data === 1) { 
                setIsPlaying(true);
-             } else if (event.data === 2) { // PAUSED
+             } else if (event.data === 2) { 
                setIsPlaying(false);
              }
           };
 
           const handleVideoSelect = (index) => {
             setCurrentVideoIndex(index);
-            // No mobile, rolar suavemente até o player
             if (window.innerWidth < 1024 && playerContainerRef.current) {
                 playerContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
@@ -165,7 +160,6 @@
           return (
             <div className="min-h-screen pb-10">
               
-              {/* Background Ambience */}
               <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#4a0404] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2d004d] rounded-full blur-[120px] opacity-20 animate-pulse delay-1000"></div>
@@ -175,31 +169,26 @@
 
               <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
                 
-                {/* Header */}
+                {/* Header Ajustado */}
                 <header className="mb-8 text-center border-b border-[#3d0a0a] pb-6">
-                  <h1 className="gothic-font text-5xl md:text-7xl bg-gradient-to-r from-[#ff0033] via-[#b026ff] to-[#ff0033] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(138,0,0,0.5)] tracking-wider">
+                  <h1 className="gothic-font text-4xl sm:text-5xl md:text-7xl bg-gradient-to-r from-[#ff0033] via-[#b026ff] to-[#ff0033] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(138,0,0,0.5)] tracking-wider">
                     NOCTURNE
                   </h1>
-                  <p className="serif-font italic text-[#a37996] mt-2 tracking-widest text-sm md:text-base">
-                    SINFONIA DAS SOMBRAS
+                  <p className="gothic-font text-[#a37996] mt-2 tracking-[0.2em] text-xs md:text-sm uppercase opacity-80">
+                    Sinfonia das Sombras
                   </p>
                 </header>
 
-                {/* Main Player Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
                   
-                  {/* Video Player */}
                   <div className="lg:col-span-2 space-y-4" ref={playerContainerRef}>
                     <div className="relative w-full aspect-video bg-black rounded-sm border-2 border-[#2d0a1e] shadow-[0_0_30px_rgba(45,0,20,0.6)] overflow-hidden group">
-                      {/* Container para API do YouTube */}
                       <div id="youtube-player" className="w-full h-full"></div>
                       <div className="absolute inset-0 border-[1px] border-[#ffffff10] pointer-events-none"></div>
                     </div>
 
-                    {/* Now Playing Info */}
                     <div className="bg-[#0f0205] border border-[#2e0212] p-4 md:p-6 rounded-sm shadow-lg flex flex-col gap-4">
                       
-                      {/* Info & Spinner */}
                       <div className="flex items-center gap-4 w-full">
                         <div className={`p-3 rounded-full bg-[#1a0505] border border-[#3d0a0a] ${isPlaying ? 'animate-spin-slow' : ''}`}>
                           <Disc className="w-6 h-6 text-[#ff0033]" />
@@ -212,9 +201,7 @@
                         </div>
                       </div>
 
-                      {/* Controls Row */}
                       <div className="flex items-center justify-between border-t border-[#2e0212] pt-4">
-                         {/* Toggle Autoplay */}
                         <button 
                           onClick={toggleAutoPlay}
                           className={`flex items-center gap-2 px-3 py-1 rounded-sm text-xs uppercase tracking-wider transition-all
@@ -246,7 +233,6 @@
                     </div>
                   </div>
 
-                  {/* Playlist Sidebar */}
                   <div className="lg:col-span-1">
                     <div className="bg-[#0a0103]/80 backdrop-blur-sm border border-[#2e0212] h-[500px] lg:h-[600px] flex flex-col rounded-sm">
                       <div className="p-4 border-b border-[#2e0212] bg-[#120205]">
@@ -297,7 +283,6 @@
 
                 </div>
 
-                {/* Footer */}
                 <footer className="text-center py-8 border-t border-[#3d0a0a] mt-8">
                   <div className="flex justify-center items-center gap-2 text-[#5c3a4a] text-sm hover:text-[#ff0033] transition-colors cursor-default">
                     <Heart className="w-3 h-3" />
@@ -316,3 +301,6 @@
     </script>
 </body>
 </html>
+
+
+                        
