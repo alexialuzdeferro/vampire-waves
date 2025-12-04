@@ -8,17 +8,8 @@
 
 
 ​<!-- Badges simplificadas para garantir carregamento -->
-
-
-
-
-
 </p>
-
-
 ​<br />
-
-
 ​<h3>
 
 
