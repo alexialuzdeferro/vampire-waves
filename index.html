@@ -1,302 +1,316 @@
-import React, { useState, useEffect } from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, Skull, Zap } from 'lucide-react';
-
-const GothicMusicPlayer = () => {
-  const [currentTrack, setCurrentTrack] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [theme, setTheme] = useState('dark');
-  const [playAllMode, setPlayAllMode] = useState(false);
-  const [audioBars, setAudioBars] = useState(Array(20).fill(0).map(() => Math.random()));
-
-  const tracks = [
-    { id: 1, title: "Shadowlands", artist: "The Cure", duration: "4:23", color: "#DC143C" },
-    { id: 2, title: "Melancholic Dreams", artist: "Joy Division", duration: "3:58", color: "#8B008B" },
-    { id: 3, title: "Nocturnal Whispers", artist: "Bauhaus", duration: "5:12", color: "#6A0DAD" },
-    { id: 4, title: "Endless Night", artist: "Siouxsie", duration: "4:45", color: "#B22222" },
-    { id: 5, title: "Gothic Pulse", artist: "Sisters of Mercy", duration: "3:34", color: "#9400D3" },
-    { id: 6, title: "Dark Wave", artist: "Clan of Xymox", duration: "4:18", color: "#8B0000" },
-    { id: 7, title: "Midnight Ritual", artist: "The Mission", duration: "5:02", color: "#DC143C" },
-    { id: 8, title: "Cold Embrace", artist: "Fields of Nephilim", duration: "4:56", color: "#4B0082" },
-    { id: 9, title: "Eternal Sorrow", artist: "Christian Death", duration: "3:41", color: "#8B008B" },
-    { id: 10, title: "Phantom Dance", artist: "The Chameleons", duration: "4:29", color: "#6A0DAD" },
-    { id: 11, title: "Velvet Darkness", artist: "Cocteau Twins", duration: "3:52", color: "#B22222" },
-    { id: 12, title: "Lost Souls", artist: "Dead Can Dance", duration: "5:23", color: "#9400D3" },
-    { id: 13, title: "Bleeding Heart", artist: "Echo & Bunnymen", duration: "4:11", color: "#DC143C" },
-    { id: 14, title: "Crimson Tears", artist: "This Mortal Coil", duration: "3:47", color: "#8B0000" },
-    { id: 15, title: "Desolation", artist: "New Order", duration: "4:38", color: "#4B0082" },
-    { id: 16, title: "Lunar Eclipse", artist: "The Sound", duration: "4:04", color: "#8B008B" },
-    { id: 17, title: "Forbidden Night", artist: "Modern English", duration: "3:55", color: "#6A0DAD" },
-    { id: 18, title: "Silent Scream", artist: "Gene Loves Jezebel", duration: "4:27", color: "#B22222" }
-  ];
-
-  useEffect(() => {
-    if (isPlaying) {
-      const interval = setInterval(() => {
-        setAudioBars(Array(20).fill(0).map(() => Math.random()));
-      }, 150);
-      return () => clearInterval(interval);
-    }
-  }, [isPlaying]);
-
-  const currentColor = tracks[currentTrack].color;
-
-  const getThemeClasses = () => {
-    switch(theme) {
-      case 'light':
-        return {
-          bg: 'bg-gray-100',
-          card: 'bg-white',
-          text: 'text-gray-900',
-          secondary: 'text-gray-600'
-        };
-      case 'purple':
-        return {
-          bg: 'bg-gradient-to-br from-purple-950 via-purple-900 to-black',
-          card: 'bg-purple-900/50',
-          text: 'text-purple-50',
-          secondary: 'text-purple-300'
-        };
-      default:
-        return {
-          bg: 'bg-gradient-to-br from-gray-900 via-black to-gray-900',
-          card: 'bg-gray-800/50',
-          text: 'text-gray-100',
-          secondary: 'text-gray-400'
-        };
-    }
-  };
-
-  const themeClasses = getThemeClasses();
-
-  return (
-    <div className={`min-h-screen ${themeClasses.bg} ${themeClasses.text} transition-all duration-700 p-6`}>
-      
-      {/* Theme Switcher */}
-      <div className="flex justify-end gap-3 mb-6">
-        <button
-          onClick={() => setTheme('dark')}
-          className={`w-10 h-10 rounded-full bg-gray-900 border-4 transition-all ${theme === 'dark' ? 'border-red-500 scale-110' : 'border-gray-700'} hover:scale-110`}
-          title="Tema Escuro"
-        />
-        <button
-          onClick={() => setTheme('light')}
-          className={`w-10 h-10 rounded-full bg-white border-4 transition-all ${theme === 'light' ? 'border-purple-500 scale-110' : 'border-gray-300'} hover:scale-110`}
-          title="Tema Claro"
-        />
-        <button
-          onClick={() => setTheme('purple')}
-          className={`w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-900 border-4 transition-all ${theme === 'purple' ? 'border-yellow-400 scale-110' : 'border-purple-700'} hover:scale-110`}
-          title="Tema Roxo"
-        />
-      </div>
-
-      <div className="max-w-5xl mx-auto">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🦇 Gothic Post-Punk Player</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
         
-        {/* Main Player */}
-        <div 
-          className={`${themeClasses.card} backdrop-blur-xl rounded-3xl shadow-2xl p-8 border-4 transition-all duration-500`}
-          style={{ 
-            borderColor: currentColor,
-            boxShadow: `0 0 60px ${currentColor}60, 0 20px 40px rgba(0,0,0,0.5)`
-          }}
-        >
-          
-          {/* Visualizer */}
-          <div 
-            className="relative w-80 h-80 mx-auto mb-8 rounded-3xl overflow-hidden transition-all duration-500 shadow-2xl"
-            style={{ 
-              background: `radial-gradient(circle at center, ${currentColor}60, ${currentColor}20, #00000090)`,
-              boxShadow: `0 0 80px ${currentColor}80, inset 0 0 100px ${currentColor}40`
-            }}
-          >
-            {/* Audio Bars */}
-            <div className="absolute inset-0 flex items-end justify-center gap-1 p-6">
-              {audioBars.map((height, i) => (
-                <div
-                  key={i}
-                  className="flex-1 rounded-t-xl transition-all duration-150 shadow-lg"
-                  style={{
-                    height: isPlaying ? `${Math.max(height * 100, 10)}%` : '5%',
-                    backgroundColor: currentColor,
-                    opacity: isPlaying ? 0.9 : 0.2,
-                    boxShadow: isPlaying ? `0 0 20px ${currentColor}` : 'none'
-                  }}
-                />
-              ))}
-            </div>
-            
-            {/* Center Skull */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Skull 
-                size={120} 
-                className={`${isPlaying ? 'animate-pulse' : ''} drop-shadow-2xl`}
-                style={{ 
-                  color: currentColor,
-                  filter: `drop-shadow(0 0 30px ${currentColor})`
-                }}
-              />
-            </div>
-          </div>
+        .pulse-glow {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .bounce-slow {
+            animation: bounce-slow 1s ease-in-out infinite;
+        }
 
-          {/* Track Info */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-3 animate-pulse" style={{ color: currentColor }}>
-              {tracks[currentTrack].title}
-            </h1>
-            <p className={`text-xl ${themeClasses.secondary} mb-2`}>
-              {tracks[currentTrack].artist}
-            </p>
-            <p className={`text-sm ${themeClasses.secondary} opacity-70`}>
-              {tracks[currentTrack].duration}
-            </p>
-          </div>
+        .scrollbar-custom::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: var(--scroll-color);
+            border-radius: 10px;
+        }
 
-          {/* Progress Bar */}
-          <div className="mb-8 px-4">
-            <div className="h-3 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm">
-              <div 
-                className="h-full rounded-full transition-all duration-1000 shadow-lg"
-                style={{ 
-                  width: isPlaying ? '65%' : '0%',
-                  backgroundColor: currentColor,
-                  boxShadow: `0 0 20px ${currentColor}`
-                }}
-              />
-            </div>
-          </div>
+        * {
+            transition: background-color 0.5s ease, border-color 0.5s ease;
+        }
+    </style>
+</head>
+<body class="m-0 p-0">
+    <div id="app"></div>
 
-          {/* Main Controls */}
-          <div className="flex items-center justify-center gap-6 mb-8">
-            <button
-              onClick={() => {
-                setIsPlaying(false);
-                setTimeout(() => {
-                  setCurrentTrack((prev) => (prev - 1 + tracks.length) % tracks.length);
-                  setIsPlaying(true);
-                }, 100);
-              }}
-              className="p-5 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-110 shadow-xl"
-            >
-              <SkipBack size={28} />
-            </button>
-            
-            <button
-              onClick={() => setIsPlaying(!isPlaying)}
-              className="p-8 rounded-full transition-all hover:scale-110 shadow-2xl"
-              style={{ 
-                backgroundColor: currentColor,
-                boxShadow: `0 0 40px ${currentColor}, 0 10px 30px rgba(0,0,0,0.5)`
-              }}
-            >
-              {isPlaying ? <Pause size={40} /> : <Play size={40} className="ml-1" />}
-            </button>
-            
-            <button
-              onClick={() => {
-                setIsPlaying(false);
-                setTimeout(() => {
-                  setCurrentTrack((prev) => (prev + 1) % tracks.length);
-                  setIsPlaying(true);
-                }, 100);
-              }}
-              className="p-5 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-110 shadow-xl"
-            >
-              <SkipForward size={28} />
-            </button>
-          </div>
+    <script>
+        const tracks = [
+            { id: 1, title: "Shadowlands", artist: "The Cure", duration: "4:23", url: "https://youtu.be/-HeCgOiirV4", color: "#DC143C" },
+            { id: 2, title: "Melancholic Dreams", artist: "Joy Division", duration: "3:58", url: "https://youtu.be/tBpQ1f77PDA", color: "#8B008B" },
+            { id: 3, title: "Nocturnal Whispers", artist: "Bauhaus", duration: "5:12", url: "https://youtu.be/h4Jnv-pb6sk", color: "#6A0DAD" },
+            { id: 4, title: "Endless Night", artist: "Siouxsie", duration: "4:45", url: "https://youtu.be/A_ZJnKoMoBA", color: "#B22222" },
+            { id: 5, title: "Gothic Pulse", artist: "Sisters of Mercy", duration: "3:34", url: "https://youtu.be/9CvpeDHgCpo", color: "#9400D3" },
+            { id: 6, title: "Dark Wave", artist: "Clan of Xymox", duration: "4:18", url: "https://youtu.be/LHUz8vA_wCM", color: "#8B0000" },
+            { id: 7, title: "Midnight Ritual", artist: "The Mission", duration: "5:02", url: "https://youtu.be/bIGoN8_vv_Y", color: "#DC143C" },
+            { id: 8, title: "Cold Embrace", artist: "Fields of Nephilim", duration: "4:56", url: "https://youtu.be/npQwX2X3WBE", color: "#4B0082" },
+            { id: 9, title: "Eternal Sorrow", artist: "Christian Death", duration: "3:41", url: "https://youtu.be/qLQ0PZ-Zwc8", color: "#8B008B" },
+            { id: 10, title: "Phantom Dance", artist: "The Chameleons", duration: "4:29", url: "https://youtu.be/bjxfcGJM3V4", color: "#6A0DAD" },
+            { id: 11, title: "Velvet Darkness", artist: "Cocteau Twins", duration: "3:52", url: "https://youtu.be/DOzdBjtA9H0", color: "#B22222" },
+            { id: 12, title: "Lost Souls", artist: "Dead Can Dance", duration: "5:23", url: "https://youtu.be/qFtiH1bZuJ0", color: "#9400D3" },
+            { id: 13, title: "Bleeding Heart", artist: "Echo & Bunnymen", duration: "4:11", url: "https://youtu.be/FaHMRB30HmA", color: "#DC143C" },
+            { id: 14, title: "Crimson Tears", artist: "This Mortal Coil", duration: "3:47", url: "https://youtu.be/VdAlPCrndT8", color: "#8B0000" },
+            { id: 15, title: "Desolation", artist: "New Order", duration: "4:38", url: "https://youtu.be/gebchYvcp2s", color: "#4B0082" },
+            { id: 16, title: "Lunar Eclipse", artist: "The Sound", duration: "4:04", url: "https://youtu.be/77GxLUUEcHo", color: "#8B008B" },
+            { id: 17, title: "Forbidden Night", artist: "Modern English", duration: "3:55", url: "https://youtu.be/bYM8iPn47yE", color: "#6A0DAD" },
+            { id: 18, title: "Silent Scream", artist: "Gene Loves Jezebel", duration: "4:27", url: "https://youtu.be/bpxKOOUhLs8", color: "#B22222" }
+        ];
 
-          {/* Special Buttons */}
-          <div className="flex items-center justify-center gap-4 mb-8">
-            <button
-              onClick={() => {
-                const randomIndex = Math.floor(Math.random() * tracks.length);
-                setIsPlaying(false);
-                setTimeout(() => {
-                  setCurrentTrack(randomIndex);
-                  setIsPlaying(true);
-                }, 100);
-              }}
-              className="flex items-center gap-3 px-8 py-4 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-105 border-2 shadow-xl"
-              style={{ borderColor: currentColor }}
-            >
-              <Skull size={24} className="animate-pulse" />
-              <span className="font-bold text-lg">ALEATÓRIO</span>
-            </button>
-            
-            <button
-              onClick={() => {
-                setPlayAllMode(!playAllMode);
-                setIsPlaying(!playAllMode);
-              }}
-              className="flex items-center gap-3 px-8 py-4 rounded-full transition-all hover:scale-105 border-2 shadow-xl font-bold text-lg"
-              style={{ 
-                backgroundColor: playAllMode ? currentColor : 'transparent',
-                borderColor: currentColor,
-                animation: playAllMode ? 'pulse 1s infinite' : 'none',
-                boxShadow: playAllMode ? `0 0 30px ${currentColor}` : 'none'
-              }}
-            >
-              <Zap size={24} className={playAllMode ? 'animate-bounce' : ''} />
-              <span>PLAY ALL</span>
-            </button>
-            
-            <button className="p-4 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-110 shadow-xl">
-              <Volume2 size={24} />
-            </button>
-          </div>
+        let currentTrack = 0;
+        let isPlaying = false;
+        let theme = 'dark';
+        let playAllMode = false;
+        let audioInterval;
 
-          {/* Playlist */}
-          <div className="max-h-96 overflow-y-auto space-y-2 px-2">
-            {tracks.map((track, index) => (
-              <div
-                key={track.id}
-                onClick={() => {
-                  setIsPlaying(false);
-                  setTimeout(() => {
-                    setCurrentTrack(index);
-                    setIsPlaying(true);
-                  }, 100);
-                }}
-                className={`flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:scale-102 backdrop-blur-sm ${
-                  currentTrack === index 
-                    ? 'shadow-xl' 
-                    : 'bg-black/20 hover:bg-black/30'
-                }`}
-                style={{
-                  backgroundColor: currentTrack === index ? `${track.color}30` : undefined,
-                  borderLeft: currentTrack === index ? `6px solid ${track.color}` : 'none',
-                  boxShadow: currentTrack === index ? `0 0 20px ${track.color}40` : 'none'
-                }}
-              >
-                <div className="flex items-center gap-4">
-                  <div 
-                    className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg"
-                    style={{ 
-                      backgroundColor: track.color,
-                      boxShadow: `0 0 15px ${track.color}60`
-                    }}
-                  >
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="font-bold text-lg">{track.title}</p>
-                    <p className={`text-sm ${themeClasses.secondary}`}>{track.artist}</p>
-                  </div>
+        function getThemeClasses() {
+            const themes = {
+                dark: {
+                    bg: 'bg-gradient-to-br from-gray-900 via-black to-gray-900',
+                    card: 'bg-gray-800/50',
+                    text: 'text-gray-100',
+                    secondary: 'text-gray-400'
+                },
+                light: {
+                    bg: 'bg-gray-100',
+                    card: 'bg-white',
+                    text: 'text-gray-900',
+                    secondary: 'text-gray-600'
+                },
+                purple: {
+                    bg: 'bg-gradient-to-br from-purple-950 via-purple-900 to-black',
+                    card: 'bg-purple-900/50',
+                    text: 'text-purple-50',
+                    secondary: 'text-purple-300'
+                }
+            };
+            return themes[theme];
+        }
+
+        function updateAudioBars() {
+            const barsContainer = document.getElementById('audioBars');
+            if (!barsContainer) return;
+            
+            const bars = barsContainer.children;
+            for (let i = 0; i < bars.length; i++) {
+                const height = Math.random() * 100;
+                bars[i].style.height = isPlaying ? `${Math.max(height, 10)}%` : '5%';
+                bars[i].style.opacity = isPlaying ? '0.9' : '0.2';
+            }
+        }
+
+        function togglePlay() {
+            isPlaying = !isPlaying;
+            if (isPlaying) {
+                audioInterval = setInterval(updateAudioBars, 150);
+            } else {
+                clearInterval(audioInterval);
+            }
+            render();
+        }
+
+        function nextTrack() {
+            isPlaying = false;
+            clearInterval(audioInterval);
+            setTimeout(() => {
+                currentTrack = (currentTrack + 1) % tracks.length;
+                isPlaying = true;
+                audioInterval = setInterval(updateAudioBars, 150);
+                render();
+            }, 100);
+        }
+
+        function prevTrack() {
+            isPlaying = false;
+            clearInterval(audioInterval);
+            setTimeout(() => {
+                currentTrack = (currentTrack - 1 + tracks.length) % tracks.length;
+                isPlaying = true;
+                audioInterval = setInterval(updateAudioBars, 150);
+                render();
+            }, 100);
+        }
+
+        function randomTrack() {
+            isPlaying = false;
+            clearInterval(audioInterval);
+            const randomIndex = Math.floor(Math.random() * tracks.length);
+            setTimeout(() => {
+                currentTrack = randomIndex;
+                isPlaying = true;
+                audioInterval = setInterval(updateAudioBars, 150);
+                render();
+            }, 100);
+        }
+
+        function selectTrack(index) {
+            isPlaying = false;
+            clearInterval(audioInterval);
+            setTimeout(() => {
+                currentTrack = index;
+                isPlaying = true;
+                audioInterval = setInterval(updateAudioBars, 150);
+                render();
+            }, 100);
+        }
+
+        function togglePlayAll() {
+            playAllMode = !playAllMode;
+            isPlaying = playAllMode;
+            if (isPlaying) {
+                audioInterval = setInterval(updateAudioBars, 150);
+            } else {
+                clearInterval(audioInterval);
+            }
+            render();
+        }
+
+        function changeTheme(newTheme) {
+            theme = newTheme;
+            render();
+        }
+
+        function render() {
+            const currentColor = tracks[currentTrack].color;
+            const themeClasses = getThemeClasses();
+            
+            document.documentElement.style.setProperty('--scroll-color', currentColor);
+            
+            const app = document.getElementById('app');
+            app.innerHTML = `
+                <div class="min-h-screen ${themeClasses.bg} ${themeClasses.text} p-6">
+                    
+                    <!-- Theme Switcher -->
+                    <div class="flex justify-end gap-3 mb-6">
+                        <button onclick="changeTheme('dark')" class="w-10 h-10 rounded-full bg-gray-900 border-4 ${theme === 'dark' ? 'border-red-500 scale-110' : 'border-gray-700'} hover:scale-110 transition-transform"></button>
+                        <button onclick="changeTheme('light')" class="w-10 h-10 rounded-full bg-white border-4 ${theme === 'light' ? 'border-purple-500 scale-110' : 'border-gray-300'} hover:scale-110 transition-transform"></button>
+                        <button onclick="changeTheme('purple')" class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-purple-900 border-4 ${theme === 'purple' ? 'border-yellow-400 scale-110' : 'border-purple-700'} hover:scale-110 transition-transform"></button>
+                    </div>
+
+                    <div class="max-w-5xl mx-auto">
+                        
+                        <!-- Main Player -->
+                        <div class="${themeClasses.card} backdrop-blur-xl rounded-3xl shadow-2xl p-8 border-4" style="border-color: ${currentColor}; box-shadow: 0 0 60px ${currentColor}60, 0 20px 40px rgba(0,0,0,0.5)">
+                            
+                            <!-- Visualizer -->
+                            <div class="relative w-80 h-80 mx-auto mb-8 rounded-3xl overflow-hidden shadow-2xl" style="background: radial-gradient(circle at center, ${currentColor}60, ${currentColor}20, #00000090); box-shadow: 0 0 80px ${currentColor}80, inset 0 0 100px ${currentColor}40">
+                                
+                                <!-- Audio Bars -->
+                                <div id="audioBars" class="absolute inset-0 flex items-end justify-center gap-1 p-6">
+                                    ${Array(20).fill(0).map(() => `
+                                        <div class="flex-1 rounded-t-xl transition-all duration-150 shadow-lg" style="height: 5%; background-color: ${currentColor}; opacity: 0.2"></div>
+                                    `).join('')}
+                                </div>
+                                
+                                <!-- Center Skull -->
+                                <div class="absolute inset-0 flex items-center justify-center">
+                                    <svg class="${isPlaying ? 'pulse-glow' : ''}" xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="${currentColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 0 30px ${currentColor})">
+                                        <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Track Info -->
+                            <div class="text-center mb-8">
+                                <h1 class="text-4xl font-bold mb-3" style="color: ${currentColor}">${tracks[currentTrack].title}</h1>
+                                <p class="text-xl ${themeClasses.secondary} mb-2">${tracks[currentTrack].artist}</p>
+                                <p class="text-sm ${themeClasses.secondary} opacity-70">${tracks[currentTrack].duration}</p>
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="mb-8 px-4">
+                                <div class="h-3 bg-black/30 rounded-full overflow-hidden backdrop-blur-sm">
+                                    <div class="h-full rounded-full transition-all duration-1000 shadow-lg" style="width: ${isPlaying ? '65%' : '0%'}; background-color: ${currentColor}; box-shadow: 0 0 20px ${currentColor}"></div>
+                                </div>
+                            </div>
+
+                            <!-- Main Controls -->
+                            <div class="flex items-center justify-center gap-6 mb-8">
+                                <button onclick="prevTrack()" class="p-5 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-110 shadow-xl">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"/><polygon points="22 19 13 12 22 5 22 19"/></svg>
+                                </button>
+                                
+                                <button onclick="togglePlay()" class="p-8 rounded-full transition-all hover:scale-110 shadow-2xl" style="background-color: ${currentColor}; box-shadow: 0 0 40px ${currentColor}, 0 10px 30px rgba(0,0,0,0.5)">
+                                    ${isPlaying ? 
+                                        '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>' :
+                                        '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+                                    }
+                                </button>
+                                
+                                <button onclick="nextTrack()" class="p-5 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-110 shadow-xl">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 19 22 12 13 5 13 19"/><polygon points="2 19 11 12 2 5 2 19"/></svg>
+                                </button>
+                            </div>
+
+                            <!-- Special Buttons -->
+                            <div class="flex items-center justify-center gap-4 mb-8">
+                                <button onclick="randomTrack()" class="flex items-center gap-3 px-8 py-4 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-105 border-2 shadow-xl" style="border-color: ${currentColor}">
+                                    <svg class="pulse-glow" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/>
+                                    </svg>
+                                    <span class="font-bold text-lg">ALEATÓRIO</span>
+                                </button>
+                                
+                                <button onclick="togglePlayAll()" class="flex items-center gap-3 px-8 py-4 rounded-full transition-all hover:scale-105 border-2 shadow-xl font-bold text-lg ${playAllMode ? 'pulse-glow' : ''}" style="background-color: ${playAllMode ? currentColor : 'transparent'}; border-color: ${currentColor}; box-shadow: ${playAllMode ? `0 0 30px ${currentColor}` : 'none'}">
+                                    <svg class="${playAllMode ? 'bounce-slow' : ''}" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                    </svg>
+                                    <span>PLAY ALL</span>
+                                </button>
+                                
+                                <button class="p-4 rounded-full bg-gray-700/80 backdrop-blur-sm hover:bg-gray-600 transition-all hover:scale-110 shadow-xl">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                                        <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                                        <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Playlist -->
+                            <div class="max-h-96 overflow-y-auto space-y-2 px-2 scrollbar-custom">
+                                ${tracks.map((track, index) => `
+                                    <div onclick="selectTrack(${index})" class="flex items-center justify-between p-4 rounded-xl cursor-pointer transition-all hover:scale-102 backdrop-blur-sm ${currentTrack === index ? 'shadow-xl' : 'bg-black/20 hover:bg-black/30'}" style="${currentTrack === index ? `background-color: ${track.color}30; border-left: 6px solid ${track.color}; box-shadow: 0 0 20px ${track.color}40` : ''}">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg shadow-lg" style="background-color: ${track.color}; box-shadow: 0 0 15px ${track.color}60">
+                                                ${index + 1}
+                                            </div>
+                                            <div>
+                                                <p class="font-bold text-lg">${track.title}</p>
+                                                <p class="text-sm ${themeClasses.secondary}">${track.artist}</p>
+                                            </div>
+                                        </div>
+                                        <span class="text-sm ${themeClasses.secondary}">${track.duration}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="text-center mt-8 opacity-70">
+                            <p class="text-lg mb-1">🦇 Gothic Post-Punk Collection 🦇</p>
+                            <p class="${themeClasses.secondary}">18 Tracks • Melancholic Vibes • Nocturnal Edition</p>
+                        </div>
+                    </div>
                 </div>
-                <span className={`text-sm ${themeClasses.secondary}`}>{track.duration}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+            `;
+            
+            updateAudioBars();
+        }
 
-        {/* Footer */}
-        <div className="text-center mt-8 opacity-70">
-          <p className="text-lg mb-1">🦇 Gothic Post-Punk Collection 🦇</p>
-          <p className={themeClasses.secondary}>18 Tracks • Melancholic Vibes • Nocturnal Edition</p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default GothicMusicPlayer;
+        // Inicializar
+        render();
+    </script>
+</body>
+</html>
