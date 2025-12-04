@@ -1,225 +1,247 @@
-import React, { useState, useEffect } from 'react';
-import { Play, SkipForward, SkipBack, Music, Volume2, Disc, Github, Heart } from 'lucide-react';
-
-// Google Fonts import handled via style tag in component for single file requirement
-const FontStyles = () => (
-  <style>
-    {`
-      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
-      
-      .gothic-font {
-        font-family: 'Cinzel', serif;
-      }
-      .serif-font {
-        font-family: 'Playfair Display', serif;
-      }
-      
-      /* Custom Scrollbar */
-      ::-webkit-scrollbar {
-        width: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: #1a0505; 
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #4a0404; 
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #8a0000; 
-      }
-
-      .crt-overlay {
-        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-        background-size: 100% 2px, 3px 100%;
-        pointer-events: none;
-      }
-    `}
-  </style>
-);
-
-const videos = [
-  { id: 'tBpQ1f77PDA', title: 'The Perfect Girl' },
-  { id: 'h4Jnv-pb6sk', title: 'Silhouette' },
-  { id: 'A_ZJnKoMoBA', title: 'After Dark' },
-  { id: '9CvpeDHgCpo', title: 'Goth' },
-  { id: 'LHUz8vA_wCM', title: 'Sudno' },
-  { id: 'bIGoN8_vv_Y', title: 'Little Dark Age' },
-  { id: 'npQwX2X3WBE', title: 'Resonance' },
-  { id: 'qLQ0PZ-Zwc8', title: 'Vampire' },
-  { id: 'bjxfcGJM3V4', title: 'Dark Beach' },
-  { id: 'DOzdBjtA9H0', title: 'Nightcall' },
-  { id: 'qFtiH1bZuJ0', title: 'SimpsonWave' },
-  { id: 'FaHMRB30HmA', title: 'Gallowdance' },
-  { id: 'VdAlPCrndT8', title: 'Crimson' },
-  { id: 'gebchYvcp2s', title: 'Shadows' },
-  { id: '77GxLUUEcHo', title: 'Insomnia' },
-  { id: 'bYM8iPn47yE', title: 'Eternal' },
-  { id: 'bpxKOOUhLs8', title: 'Void' }
-];
-
-export default function App() {
-  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const handleVideoSelect = (index) => {
-    setCurrentVideoIndex(index);
-    setIsPlaying(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleNext = () => {
-    setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
-    setIsPlaying(true);
-  };
-
-  const handlePrev = () => {
-    setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
-    setIsPlaying(true);
-  };
-
-  if (!mounted) return null;
-
-  const currentVideo = videos[currentVideoIndex];
-
-  return (
-    <div className="min-h-screen bg-[#050101] text-[#e0e0e0] font-sans relative overflow-x-hidden selection:bg-[#8a0000] selection:text-white">
-      <FontStyles />
-      
-      {/* Background Ambience */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#4a0404] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2d004d] rounded-full blur-[120px] opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-[#8a0000] rounded-full blur-[150px] opacity-10"></div>
-        <div className="crt-overlay absolute inset-0 z-50 opacity-20"></div>
-      </div>
-
-      <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nocturne Player</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel para compilar JSX no navegador -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
         
-        {/* Header */}
-        <header className="mb-8 text-center border-b border-[#3d0a0a] pb-6">
-          <h1 className="gothic-font text-5xl md:text-7xl bg-gradient-to-r from-[#ff0033] via-[#b026ff] to-[#ff0033] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(138,0,0,0.5)] tracking-wider">
-            NOCTURNE
-          </h1>
-          <p className="serif-font italic text-[#a37996] mt-2 tracking-widest text-sm md:text-base">
-            SINFONIA DAS SOMBRAS
-          </p>
-        </header>
+        .gothic-font { font-family: 'Cinzel', serif; }
+        .serif-font { font-family: 'Playfair Display', serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a0505; }
+        ::-webkit-scrollbar-thumb { background: #4a0404; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8a0000; }
 
-        {/* Main Player Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          
-          {/* Video Player */}
-          <div className="lg:col-span-2 space-y-4">
-            <div className="relative w-full aspect-video bg-black rounded-sm border-2 border-[#2d0a1e] shadow-[0_0_30px_rgba(45,0,20,0.6)] overflow-hidden group">
-              <iframe
-                className="w-full h-full object-cover"
-                src={`https://www.youtube.com/embed/${currentVideo.id}?autoplay=1&rel=0&modestbranding=1`}
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-              <div className="absolute inset-0 border-[1px] border-[#ffffff10] pointer-events-none"></div>
-            </div>
+        /* Efeito de TV Antiga (CRT) */
+        .crt-overlay {
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+        
+        .animate-spin-slow { animation: spin 4s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-[#050101] text-[#e0e0e0] font-sans relative overflow-x-hidden selection:bg-[#8a0000] selection:text-white">
+    <div id="root"></div>
 
-            {/* Now Playing Info */}
-            <div className="bg-[#0f0205] border border-[#2e0212] p-6 rounded-sm shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4 w-full">
-                <div className={`p-3 rounded-full bg-[#1a0505] border border-[#3d0a0a] ${isPlaying ? 'animate-spin-slow' : ''}`}>
-                  <Disc className="w-6 h-6 text-[#ff0033]" />
-                </div>
-                <div className="overflow-hidden">
-                  <h2 className="serif-font text-2xl text-[#decbcb] truncate">{currentVideo.title || `Track ${currentVideoIndex + 1}`}</h2>
-                  <p className="text-xs text-[#804d5e] uppercase tracking-widest">Reproduzindo Agora</p>
-                </div>
-              </div>
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Ícones SVG embutidos para não depender de bibliotecas externas
+        const Disc = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>
+        );
+        const SkipBack = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>
+        );
+        const SkipForward = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>
+        );
+        const Music = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        );
+        const Volume2 = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        );
+        const Heart = ({ className }) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        );
+
+        const videos = [
+          { id: 'tBpQ1f77PDA', title: 'The Perfect Girl' },
+          { id: 'h4Jnv-pb6sk', title: 'Silhouette' },
+          { id: 'A_ZJnKoMoBA', title: 'After Dark' },
+          { id: '9CvpeDHgCpo', title: 'Goth' },
+          { id: 'LHUz8vA_wCM', title: 'Sudno' },
+          { id: 'bIGoN8_vv_Y', title: 'Little Dark Age' },
+          { id: 'npQwX2X3WBE', title: 'Resonance' },
+          { id: 'qLQ0PZ-Zwc8', title: 'Vampire' },
+          { id: 'bjxfcGJM3V4', title: 'Dark Beach' },
+          { id: 'DOzdBjtA9H0', title: 'Nightcall' },
+          { id: 'qFtiH1bZuJ0', title: 'SimpsonWave' },
+          { id: 'FaHMRB30HmA', title: 'Gallowdance' },
+          { id: 'VdAlPCrndT8', title: 'Crimson' },
+          { id: 'gebchYvcp2s', title: 'Shadows' },
+          { id: '77GxLUUEcHo', title: 'Insomnia' },
+          { id: 'bYM8iPn47yE', title: 'Eternal' },
+          { id: 'bpxKOOUhLs8', title: 'Void' }
+        ];
+
+        function App() {
+          const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+          const [isPlaying, setIsPlaying] = useState(false);
+
+          const handleVideoSelect = (index) => {
+            setCurrentVideoIndex(index);
+            setIsPlaying(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          };
+
+          const handleNext = () => {
+            setCurrentVideoIndex((prev) => (prev + 1) % videos.length);
+            setIsPlaying(true);
+          };
+
+          const handlePrev = () => {
+            setCurrentVideoIndex((prev) => (prev - 1 + videos.length) % videos.length);
+            setIsPlaying(true);
+          };
+
+          const currentVideo = videos[currentVideoIndex];
+
+          return (
+            <div className="min-h-screen">
               
-              {/* Controls */}
-              <div className="flex items-center gap-4">
-                <button 
-                  onClick={handlePrev}
-                  className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
-                >
-                  <SkipBack className="w-6 h-6" />
-                </button>
-                <div className="w-px h-8 bg-[#2e0212]"></div>
-                <button 
-                  onClick={handleNext}
-                  className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
-                >
-                  <SkipForward className="w-6 h-6" />
-                </button>
+              {/* Background Ambience */}
+              <div className="fixed inset-0 pointer-events-none z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#4a0404] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2d004d] rounded-full blur-[120px] opacity-20 animate-pulse delay-1000"></div>
+                <div className="absolute top-[40%] left-[40%] w-[30%] h-[30%] bg-[#8a0000] rounded-full blur-[150px] opacity-10"></div>
+                <div className="crt-overlay absolute inset-0 z-50 opacity-20"></div>
               </div>
-            </div>
-          </div>
 
-          {/* Playlist Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-[#0a0103]/80 backdrop-blur-sm border border-[#2e0212] h-[600px] flex flex-col rounded-sm">
-              <div className="p-4 border-b border-[#2e0212] bg-[#120205]">
-                <h3 className="gothic-font text-xl text-[#b026ff] flex items-center gap-2">
-                  <Music className="w-4 h-4" /> Playlist Gótica
-                </h3>
-                <p className="text-xs text-gray-500 mt-1">{videos.length} Faixas Encontradas</p>
-              </div>
-              
-              <div className="overflow-y-auto flex-1 p-2 space-y-2">
-                {videos.map((video, index) => (
-                  <div 
-                    key={video.id}
-                    onClick={() => handleVideoSelect(index)}
-                    className={`
-                      group flex items-center gap-3 p-2 rounded-sm cursor-pointer border border-transparent transition-all duration-300
-                      ${currentVideoIndex === index 
-                        ? 'bg-[#1f050a] border-[#4a0404] shadow-[0_0_10px_rgba(138,0,0,0.2)]' 
-                        : 'hover:bg-[#120408] hover:border-[#2e0212]'}
-                    `}
-                  >
-                    <div className="relative w-16 h-12 flex-shrink-0 overflow-hidden rounded-sm border border-[#1f050a]">
-                      <img 
-                        src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`} 
-                        alt="thumbnail" 
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
-                      />
-                      {currentVideoIndex === index && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <Volume2 className="w-4 h-4 text-[#ff0033] animate-pulse" />
-                        </div>
-                      )}
+              <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
+                
+                {/* Header */}
+                <header className="mb-8 text-center border-b border-[#3d0a0a] pb-6">
+                  <h1 className="gothic-font text-5xl md:text-7xl bg-gradient-to-r from-[#ff0033] via-[#b026ff] to-[#ff0033] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(138,0,0,0.5)] tracking-wider">
+                    NOCTURNE
+                  </h1>
+                  <p className="serif-font italic text-[#a37996] mt-2 tracking-widest text-sm md:text-base">
+                    SINFONIA DAS SOMBRAS
+                  </p>
+                </header>
+
+                {/* Main Player Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
+                  
+                  {/* Video Player */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="relative w-full aspect-video bg-black rounded-sm border-2 border-[#2d0a1e] shadow-[0_0_30px_rgba(45,0,20,0.6)] overflow-hidden group">
+                      <iframe
+                        className="w-full h-full object-cover"
+                        src={`https://www.youtube.com/embed/${currentVideo.id}?autoplay=1&rel=0&modestbranding=1`}
+                        title="YouTube video player"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      ></iframe>
+                      <div className="absolute inset-0 border-[1px] border-[#ffffff10] pointer-events-none"></div>
                     </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <p className={`serif-font text-sm truncate ${currentVideoIndex === index ? 'text-[#ffb3c1]' : 'text-[#a0a0a0] group-hover:text-[#decbcb]'}`}>
-                        {video.title || `Ritual ${index + 1}`}
-                      </p>
-                      <p className="text-[10px] text-[#5c3a4a] uppercase tracking-wider group-hover:text-[#b026ff] transition-colors">
-                        {currentVideoIndex === index ? 'Tocando...' : 'Assistir'}
-                      </p>
+
+                    {/* Now Playing Info */}
+                    <div className="bg-[#0f0205] border border-[#2e0212] p-6 rounded-sm shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 w-full">
+                        <div className={`p-3 rounded-full bg-[#1a0505] border border-[#3d0a0a] ${isPlaying ? 'animate-spin-slow' : ''}`}>
+                          <Disc className="w-6 h-6 text-[#ff0033]" />
+                        </div>
+                        <div className="overflow-hidden">
+                          <h2 className="serif-font text-2xl text-[#decbcb] truncate">{currentVideo.title || `Track ${currentVideoIndex + 1}`}</h2>
+                          <p className="text-xs text-[#804d5e] uppercase tracking-widest">Reproduzindo Agora</p>
+                        </div>
+                      </div>
+                      
+                      {/* Controls */}
+                      <div className="flex items-center gap-4">
+                        <button 
+                          onClick={handlePrev}
+                          className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
+                        >
+                          <SkipBack className="w-6 h-6" />
+                        </button>
+                        <div className="w-px h-8 bg-[#2e0212]"></div>
+                        <button 
+                          onClick={handleNext}
+                          className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
+                        >
+                          <SkipForward className="w-6 h-6" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                ))}
+
+                  {/* Playlist Sidebar */}
+                  <div className="lg:col-span-1">
+                    <div className="bg-[#0a0103]/80 backdrop-blur-sm border border-[#2e0212] h-[600px] flex flex-col rounded-sm">
+                      <div className="p-4 border-b border-[#2e0212] bg-[#120205]">
+                        <h3 className="gothic-font text-xl text-[#b026ff] flex items-center gap-2">
+                          <Music className="w-4 h-4" /> Playlist Gótica
+                        </h3>
+                        <p className="text-xs text-gray-500 mt-1">{videos.length} Faixas Encontradas</p>
+                      </div>
+                      
+                      <div className="overflow-y-auto flex-1 p-2 space-y-2">
+                        {videos.map((video, index) => (
+                          <div 
+                            key={video.id}
+                            onClick={() => handleVideoSelect(index)}
+                            className={`
+                              group flex items-center gap-3 p-2 rounded-sm cursor-pointer border border-transparent transition-all duration-300
+                              ${currentVideoIndex === index 
+                                ? 'bg-[#1f050a] border-[#4a0404] shadow-[0_0_10px_rgba(138,0,0,0.2)]' 
+                                : 'hover:bg-[#120408] hover:border-[#2e0212]'}
+                            `}
+                          >
+                            <div className="relative w-16 h-12 flex-shrink-0 overflow-hidden rounded-sm border border-[#1f050a]">
+                              <img 
+                                src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`} 
+                                alt="thumbnail" 
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                              />
+                              {currentVideoIndex === index && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                  <Volume2 className="w-4 h-4 text-[#ff0033] animate-pulse" />
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex-1 min-w-0">
+                              <p className={`serif-font text-sm truncate ${currentVideoIndex === index ? 'text-[#ffb3c1]' : 'text-[#a0a0a0] group-hover:text-[#decbcb]'}`}>
+                                {video.title || `Ritual ${index + 1}`}
+                              </p>
+                              <p className="text-[10px] text-[#5c3a4a] uppercase tracking-wider group-hover:text-[#b026ff] transition-colors">
+                                {currentVideoIndex === index ? 'Tocando...' : 'Assistir'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Footer */}
+                <footer className="text-center py-8 border-t border-[#3d0a0a] mt-8">
+                  <div className="flex justify-center items-center gap-2 text-[#5c3a4a] text-sm hover:text-[#ff0033] transition-colors cursor-default">
+                    <Heart className="w-3 h-3" />
+                    <span className="serif-font tracking-widest">CRIADO NA ESCURIDÃO</span>
+                    <Heart className="w-3 h-3" />
+                  </div>
+                </footer>
+
               </div>
             </div>
-          </div>
+          );
+        }
 
-        </div>
-
-        {/* Footer */}
-        <footer className="text-center py-8 border-t border-[#3d0a0a] mt-8">
-          <div className="flex justify-center items-center gap-2 text-[#5c3a4a] text-sm hover:text-[#ff0033] transition-colors cursor-default">
-            <Heart className="w-3 h-3" />
-            <span className="serif-font tracking-widest">CRIADO NA ESCURIDÃO</span>
-            <Heart className="w-3 h-3" />
-          </div>
-        </footer>
-
-      </div>
-    </div>
-  );
-}
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
