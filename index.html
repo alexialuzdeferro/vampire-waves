@@ -1,0 +1,318 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, Skull, Zap } from 'lucide-react';
+
+const GothicMusicPlayer = () => {
+  const [currentTrack, setCurrentTrack] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [theme, setTheme] = useState('dark'); // dark, light, purple
+  const [playAllMode, setPlayAllMode] = useState(false);
+  const audioRef = useRef(null);
+
+  const tracks = [
+    { id: 1, title: "Shadowlands", artist: "The Cure", duration: "4:23", url: "https://youtu.be/-HeCgOiirV4", color: "#8B0000" },
+    { id: 2, title: "Melancholic Dreams", artist: "Joy Division", duration: "3:58", url: "https://youtu.be/tBpQ1f77PDA", color: "#4B0082" },
+    { id: 3, title: "Nocturnal Whispers", artist: "Bauhaus", duration: "5:12", url: "https://youtu.be/h4Jnv-pb6sk", color: "#800080" },
+    { id: 4, title: "Endless Night", artist: "Siouxsie", duration: "4:45", url: "https://youtu.be/A_ZJnKoMoBA", color: "#8B008B" },
+    { id: 5, title: "Gothic Pulse", artist: "Sisters of Mercy", duration: "3:34", url: "https://youtu.be/9CvpeDHgCpo", color: "#DC143C" },
+    { id: 6, title: "Dark Wave", artist: "Clan of Xymox", duration: "4:18", url: "https://youtu.be/LHUz8vA_wCM", color: "#6A0DAD" },
+    { id: 7, title: "Midnight Ritual", artist: "The Mission", duration: "5:02", url: "https://youtu.be/bIGoN8_vv_Y", color: "#8B0000" },
+    { id: 8, title: "Cold Embrace", artist: "Fields of Nephilim", duration: "4:56", url: "https://youtu.be/npQwX2X3WBE", color: "#9400D3" },
+    { id: 9, title: "Eternal Sorrow", artist: "Christian Death", duration: "3:41", url: "https://youtu.be/qLQ0PZ-Zwc8", color: "#B22222" },
+    { id: 10, title: "Phantom Dance", artist: "The Chameleons", duration: "4:29", url: "https://youtu.be/bjxfcGJM3V4", color: "#800080" },
+    { id: 11, title: "Velvet Darkness", artist: "Cocteau Twins", duration: "3:52", url: "https://youtu.be/DOzdBjtA9H0", color: "#4B0082" },
+    { id: 12, title: "Lost Souls", artist: "Dead Can Dance", duration: "5:23", url: "https://youtu.be/qFtiH1bZuJ0", color: "#8B008B" },
+    { id: 13, title: "Bleeding Heart", artist: "Echo & Bunnymen", duration: "4:11", url: "https://youtu.be/FaHMRB30HmA", color: "#DC143C" },
+    { id: 14, title: "Crimson Tears", artist: "This Mortal Coil", duration: "3:47", url: "https://youtu.be/VdAlPCrndT8", color: "#8B0000" },
+    { id: 15, title: "Desolation", artist: "New Order", duration: "4:38", url: "https://youtu.be/gebchYvcp2s", color: "#6A0DAD" },
+    { id: 16, title: "Lunar Eclipse", artist: "The Sound", duration: "4:04", url: "https://youtu.be/77GxLUUEcHo", color: "#9400D3" },
+    { id: 17, title: "Forbidden Night", artist: "Modern English", duration: "3:55", url: "https://youtu.be/bYM8iPn47yE", color: "#800080" },
+    { id: 18, title: "Silent Scream", artist: "Gene Loves Jezebel", duration: "4:27", url: "https://youtu.be/bpxKOOUhLs8", color: "#B22222" }
+  ];
+
+  const [audioBars, setAudioBars] = useState(Array(20).fill(0).map(() => Math.random()));
+
+  useEffect(() => {
+    if (isPlaying) {
+      const interval = setInterval(() => {
+        setAudioBars(Array(20).fill(0).map(() => Math.random()));
+      }, 150);
+      return () => clearInterval(interval);
+    }
+  }, [isPlaying]);
+
+  const themeStyles = {
+    dark: {
+      bg: 'bg-gray-900',
+      card: 'bg-gray-800',
+      text: 'text-gray-100',
+      accent: 'text-red-500',
+      border: 'border-red-900'
+    },
+    light: {
+      bg: 'bg-gray-100',
+      card: 'bg-white',
+      text: 'text-gray-900',
+      accent: 'text-purple-600',
+      border: 'border-purple-300'
+    },
+    purple: {
+      bg: 'bg-purple-950',
+      card: 'bg-purple-900',
+      text: 'text-purple-50',
+      accent: 'text-yellow-400',
+      border: 'border-purple-600'
+    }
+  };
+
+  const currentTheme = themeStyles[theme];
+  const currentColor = tracks[currentTrack].color;
+
+  const playPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
+  const nextTrack = () => {
+    setIsPlaying(false);
+    setTimeout(() => {
+      setCurrentTrack((prev) => (prev + 1) % tracks.length);
+      setIsPlaying(true);
+    }, 100);
+  };
+
+  const prevTrack = () => {
+    setIsPlaying(false);
+    setTimeout(() => {
+      setCurrentTrack((prev) => (prev - 1 + tracks.length) % tracks.length);
+      setIsPlaying(true);
+    }, 100);
+  };
+
+  const playRandom = () => {
+    const randomIndex = Math.floor(Math.random() * tracks.length);
+    setIsPlaying(false);
+    setTimeout(() => {
+      setCurrentTrack(randomIndex);
+      setIsPlaying(true);
+    }, 100);
+  };
+
+  const togglePlayAll = () => {
+    setPlayAllMode(!playAllMode);
+    setIsPlaying(!playAllMode);
+  };
+
+  const selectTrack = (index) => {
+    setIsPlaying(false);
+    setTimeout(() => {
+      setCurrentTrack(index);
+      setIsPlaying(true);
+    }, 100);
+  };
+
+  return (
+    <div className={`min-h-screen ${currentTheme.bg} ${currentTheme.text} transition-all duration-700 p-4`}>
+      {/* Theme Switcher */}
+      <div className="flex justify-end gap-2 mb-4">
+        <button
+          onClick={() => setTheme('dark')}
+          className="w-8 h-8 rounded-full bg-gray-900 border-2 border-red-500 hover:scale-110 transition-transform"
+        />
+        <button
+          onClick={() => setTheme('light')}
+          className="w-8 h-8 rounded-full bg-white border-2 border-purple-500 hover:scale-110 transition-transform"
+        />
+        <button
+          onClick={() => setTheme('purple')}
+          className="w-8 h-8 rounded-full bg-purple-600 border-2 border-yellow-400 hover:scale-110 transition-transform"
+        />
+      </div>
+
+      {/* Main Player Card */}
+      <div className="max-w-4xl mx-auto">
+        <div 
+          className={`${currentTheme.card} rounded-3xl shadow-2xl p-8 border-4 ${currentTheme.border} transition-all duration-500`}
+          style={{ 
+            boxShadow: `0 0 40px ${currentColor}40`,
+            borderColor: currentColor
+          }}
+        >
+          {/* Album Art Visualization */}
+          <div 
+            className="relative w-64 h-64 mx-auto mb-8 rounded-2xl overflow-hidden transition-all duration-500"
+            style={{ 
+              background: `linear-gradient(135deg, ${currentColor}40, #00000080)`,
+              boxShadow: `0 0 60px ${currentColor}60`
+            }}
+          >
+            <div className="absolute inset-0 flex items-end justify-center gap-1 p-4">
+              {audioBars.map((height, i) => (
+                <div
+                  key={i}
+                  className="flex-1 rounded-t-lg transition-all duration-150"
+                  style={{
+                    height: isPlaying ? `${height * 100}%` : '20%',
+                    backgroundColor: currentColor,
+                    opacity: isPlaying ? 0.8 : 0.3
+                  }}
+                />
+              ))}
+            </div>
+            
+            {/* Skull Icon Overlay */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Skull 
+                size={80} 
+                className={`${isPlaying ? 'animate-pulse' : ''} opacity-40`}
+                style={{ color: currentColor }}
+              />
+            </div>
+          </div>
+
+          {/* Track Info */}
+          <div className="text-center mb-6">
+            <h2 className="text-3xl font-bold mb-2" style={{ color: currentColor }}>
+              {tracks[currentTrack].title}
+            </h2>
+            <p className={`text-lg ${currentTheme.text} opacity-70`}>
+              {tracks[currentTrack].artist}
+            </p>
+            <p className={`text-sm ${currentTheme.text} opacity-50 mt-1`}>
+              {tracks[currentTrack].duration}
+            </p>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mb-6">
+            <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
+              <div 
+                className="h-full rounded-full transition-all duration-300"
+                style={{ 
+                  width: isPlaying ? '45%' : '0%',
+                  backgroundColor: currentColor
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Main Controls */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <button
+              onClick={prevTrack}
+              className="p-4 rounded-full bg-gray-700 hover:bg-gray-600 transition-all hover:scale-110"
+            >
+              <SkipBack size={24} />
+            </button>
+            
+            <button
+              onClick={playPause}
+              className="p-6 rounded-full transition-all hover:scale-110 shadow-lg"
+              style={{ 
+                backgroundColor: currentColor,
+                boxShadow: `0 0 20px ${currentColor}80`
+              }}
+            >
+              {isPlaying ? <Pause size={32} /> : <Play size={32} />}
+            </button>
+            
+            <button
+              onClick={nextTrack}
+              className="p-4 rounded-full bg-gray-700 hover:bg-gray-600 transition-all hover:scale-110"
+            >
+              <SkipForward size={24} />
+            </button>
+          </div>
+
+          {/* Special Buttons */}
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <button
+              onClick={playRandom}
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-gray-700 hover:bg-gray-600 transition-all hover:scale-105 border-2"
+              style={{ borderColor: currentColor }}
+            >
+              <Skull size={20} className="animate-pulse" />
+              <span>Random</span>
+            </button>
+            
+            <button
+              onClick={togglePlayAll}
+              className={`flex items-center gap-2 px-6 py-3 rounded-full transition-all hover:scale-105 border-2 ${
+                playAllMode ? 'animate-pulse' : ''
+              }`}
+              style={{ 
+                backgroundColor: playAllMode ? currentColor : 'transparent',
+                borderColor: currentColor,
+                animation: playAllMode ? 'pulse 1s infinite' : 'none'
+              }}
+            >
+              <Zap size={20} className={playAllMode ? 'animate-bounce' : ''} />
+              <span className="font-bold">PLAY ALL</span>
+            </button>
+            
+            <button className="p-3 rounded-full bg-gray-700 hover:bg-gray-600 transition-all hover:scale-110">
+              <Volume2 size={20} />
+            </button>
+          </div>
+
+          {/* Playlist */}
+          <div className="max-h-64 overflow-y-auto space-y-2 scrollbar-thin">
+            {tracks.map((track, index) => (
+              <div
+                key={track.id}
+                onClick={() => selectTrack(index)}
+                className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all hover:scale-102 ${
+                  currentTrack === index 
+                    ? 'bg-opacity-20' 
+                    : 'bg-gray-700 bg-opacity-50 hover:bg-opacity-70'
+                }`}
+                style={{
+                  backgroundColor: currentTrack === index ? `${currentColor}40` : undefined,
+                  borderLeft: currentTrack === index ? `4px solid ${currentColor}` : 'none'
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
+                    style={{ backgroundColor: track.color }}
+                  >
+                    {index + 1}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{track.title}</p>
+                    <p className="text-sm opacity-60">{track.artist}</p>
+                  </div>
+                </div>
+                <span className="text-sm opacity-60">{track.duration}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-6 opacity-50 text-sm">
+          <p>🦇 Gothic Post-Punk Collection 🦇</p>
+          <p>18 Tracks • Melancholic Vibes • Nocturnal Edition. By; Alexia Melusine</p>
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+        .scrollbar-thin::-webkit-scrollbar {
+          width: 6px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 10px;
+        }
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+          background: ${currentColor};
+          border-radius: 10px;
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default GothicMusicPlayer;
