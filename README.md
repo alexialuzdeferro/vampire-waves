@@ -10,16 +10,7 @@
 ​<!-- Badges simplificadas para garantir carregamento -->
 
 
-​<p>
 
-
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/VIBE-GOTICA-4a0404%3Fstyle%3Dfor-the-badge%26logo%3Dghost%26logoColor%3Dwhite" alt="Vibe Gótica" />
-
-
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/SINFONIA-DARKWAVE-2d004d%3Fstyle%3Dfor-the-badge%26logo%3Ditunes%26logoColor%3Dwhite" alt="Sinfonia Darkwave" />
-
-
-<img src="https://www.google.com/search?q=https://img.shields.io/badge/STATUS-ONLINE-8a0000%3Fstyle%3Dfor-the-badge%26logo%3Dyoutube%26logoColor%3Dwhite" alt="Status Online" />
 
 
 </p>
