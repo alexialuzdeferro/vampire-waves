@@ -49,77 +49,146 @@
 
         const { useState, useEffect, useRef } = React;
 
+        // Função para criar cliente Supabase simplificado
+        const createSupabaseClient = () => {
+            return {
+                from: (table) => ({
+                    select: (columns) => ({
+                        eq: (column, value) => ({
+                            then: (callback) => {
+                                fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}?${column}=eq.${value}&select=${columns}`, {
+                                    headers: {
+                                        'apikey': CONFIG.SUPABASE_KEY,
+                                        'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+                                    }
+                                })
+                                .then(res => res.json())
+                                .then(callback)
+                                .catch(console.error);
+                            }
+                        })
+                    })
+                }),
+                rpc: (fn, params) => ({
+                    then: (callback) => {
+                        fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'apikey': CONFIG.SUPABASE_KEY,
+                                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+                            },
+                            body: JSON.stringify(params)
+                        })
+                        .then(res => res.json())
+                        .then(callback)
+                        .catch(console.error);
+                    }
+                })
+            };
+        };
+
         // Componente do Contador de Acessos
         function AccessCounter() {
             const [accessCount, setAccessCount] = useState(0);
             const [isVisible, setIsVisible] = useState(false);
 
             useEffect(() => {
-                // Verificar se já visitou nesta sessão
-                const hasVisited = sessionStorage.getItem(CONFIG.SESSION_KEY);
-                
-                if (!hasVisited) {
-                    // Marcar como visitado
-                    sessionStorage.setItem(CONFIG.SESSION_KEY, 'true');
-                    
-                    // Registrar acesso no Supabase
-                    registerAccess();
-                }
-
-                // Buscar contagem total de acessos
-                fetchAccessCount();
-                
-                // Mostrar contador após carregar
-                setTimeout(() => setIsVisible(true), 1000);
-            }, []);
-
-            const registerAccess = async () => {
-                try {
-                    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/page_visits`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'apikey': CONFIG.SUPABASE_KEY,
-                            'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
-                            'Prefer': 'return=minimal'
-                        },
-                        body: JSON.stringify({
-                            page_name: CONFIG.PAGE_NAME,
-                            visited_at: new Date().toISOString()
-                        })
-                    });
-                } catch (error) {
-                    console.log('Erro ao registrar acesso:', error);
-                }
-            };
-
-            const fetchAccessCount = async () => {
-                try {
-                    const response = await fetch(
-                        `${CONFIG.SUPABASE_URL}/rest/v1/page_visits?page_name=eq.${CONFIG.PAGE_NAME}&select=count`,
-                        {
-                            headers: {
-                                'apikey': CONFIG.SUPABASE_KEY,
-                                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
-                            }
+                const initCounter = async () => {
+                    try {
+                        const hasVisited = sessionStorage.getItem(CONFIG.SESSION_KEY);
+                        
+                        // Criar cliente Supabase
+                        const supabase = createSupabaseClient();
+                        
+                        if (!hasVisited) {
+                            // Usar a função RPC para incrementar - CORRIGIDO
+                            supabase.rpc('increment_page_view', { page_name: CONFIG.PAGE_NAME })
+                                .then(() => {
+                                    sessionStorage.setItem(CONFIG.SESSION_KEY, 'true');
+                                    console.log('Visita registrada para:', CONFIG.PAGE_NAME);
+                                });
                         }
-                    );
-                    
-                    const data = await response.json();
-                    if (data && data.length > 0) {
-                        setAccessCount(data[0].count || 0);
+
+                        // Buscar contagem atual - CORRIGIDO (usando a tabela correta)
+                        const fetchCount = async () => {
+                            try {
+                                const response = await fetch(
+                                    `${CONFIG.SUPABASE_URL}/rest/v1/page_views?page=eq.${CONFIG.PAGE_NAME}&select=count`,
+                                    {
+                                        headers: {
+                                            'apikey': CONFIG.SUPABASE_KEY,
+                                            'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
+                                            'Accept': 'application/json'
+                                        }
+                                    }
+                                );
+                                
+                                // Para o endpoint de count, Supabase retorna um array com objetos
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    console.log('Dados brutos da contagem:', data);
+                                    
+                                    // Se a resposta for um array, procurar pelo campo count
+                                    if (Array.isArray(data) && data.length > 0) {
+                                        // O Supabase retorna algo como [{count: 123}]
+                                        const count = data[0]?.count || 0;
+                                        setAccessCount(count);
+                                    } else if (typeof data === 'object' && data.count !== undefined) {
+                                        // Ou retorna direto {count: 123}
+                                        setAccessCount(data.count);
+                                    }
+                                }
+                            } catch (error) {
+                                console.error('Erro ao buscar contagem:', error);
+                                // Fallback: tentar método alternativo
+                                tryFallbackCount();
+                            }
+                        };
+
+                        // Método alternativo para buscar contagem
+                        const tryFallbackCount = async () => {
+                            try {
+                                const response = await fetch(
+                                    `${CONFIG.SUPABASE_URL}/rest/v1/page_views?page=eq.${CONFIG.PAGE_NAME}`,
+                                    {
+                                        headers: {
+                                            'apikey': CONFIG.SUPABASE_KEY,
+                                            'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+                                        }
+                                    }
+                                );
+                                
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    if (Array.isArray(data) && data.length > 0) {
+                                        // Pegar a primeira linha e verificar o campo views
+                                        const firstRow = data[0];
+                                        setAccessCount(firstRow.views || firstRow.count || 0);
+                                    }
+                                }
+                            } catch (fallbackError) {
+                                console.error('Fallback também falhou:', fallbackError);
+                            }
+                        };
+
+                        await fetchCount();
+                        setTimeout(() => setIsVisible(true), 800);
+                        
+                    } catch (error) {
+                        console.error('Erro inicializando contador:', error);
                     }
-                } catch (error) {
-                    console.log('Erro ao buscar contador:', error);
-                }
-            };
+                };
+
+                initCounter();
+            }, []);
 
             return (
                 <div className={`fixed bottom-4 right-4 z-50 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-                    <div className="flex items-center gap-2 text-[#5c3a4a] text-xs hover:text-[#8a0000] transition-colors cursor-default">
-                        <div className="flex items-center">
+                    <div className="flex items-center gap-2 text-[#5c3a4a] text-xs hover:text-[#8a0000] transition-colors cursor-default group">
+                        <div className="flex items-center bg-[#0a0103]/50 px-2 py-1 rounded border border-[#2e0212] group-hover:border-[#4a0404] transition-colors">
                             <span className="mr-1 text-[10px] opacity-70">🔮</span>
-                            <span className="font-mono">{accessCount.toLocaleString()}</span>
+                            <span className="font-mono font-bold tracking-tight">{accessCount.toLocaleString()}</span>
                         </div>
                     </div>
                 </div>
