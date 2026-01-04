@@ -11,191 +11,181 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <!-- Babel para compilar JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
+   
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
-        
+       
         .gothic-font { font-family: 'Cinzel', serif; }
         .serif-font { font-family: 'Playfair Display', serif; }
-        
+       
         /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 8px; }
         ::-webkit-scrollbar-track { background: #1a0505; }
         ::-webkit-scrollbar-thumb { background: #4a0404; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #8a0000; }
-
         /* CRT Effect */
         .crt-overlay {
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
                         linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
-        
+       
         .animate-spin-slow { animation: spin 4s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="bg-[#050101] text-[#e0e0e0] font-sans relative overflow-x-hidden selection:bg-[#8a0000] selection:text-white">
     <div id="root"></div>
-
     <script type="text/babel">
         const CONFIG = {
             SUPABASE_URL: 'https://rbygxkbewzknvjjhxdvw.supabase.co',
             SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY',
-            PAGE_NAME: 'nocturne-player',
-            SESSION_KEY: 'page_visit_nocturne'
+            PAGE_NAME: 'vampire-waves',                    // ← Corrigido: nome único da página
+            SESSION_KEY: 'page_visit_vampire_waves'        // ← Corrigido: chave única no sessionStorage
         };
-
         const { useState, useEffect, useRef } = React;
-
-        // Função para criar cliente Supabase simplificado
-        const createSupabaseClient = () => {
-            return {
-                from: (table) => ({
-                    select: (columns) => ({
-                        eq: (column, value) => ({
-                            then: (callback) => {
-                                fetch(`${CONFIG.SUPABASE_URL}/rest/v1/${table}?${column}=eq.${value}&select=${columns}`, {
-                                    headers: {
-                                        'apikey': CONFIG.SUPABASE_KEY,
-                                        'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
-                                    }
-                                })
-                                .then(res => res.json())
-                                .then(callback)
-                                .catch(console.error);
-                            }
-                        })
-                    })
-                }),
-                rpc: (fn, params) => ({
-                    then: (callback) => {
-                        fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'apikey': CONFIG.SUPABASE_KEY,
-                                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
-                            },
-                            body: JSON.stringify(params)
-                        })
-                        .then(res => res.json())
-                        .then(callback)
-                        .catch(console.error);
-                    }
-                })
-            };
-        };
 
         // Componente do Contador de Acessos
         function AccessCounter() {
             const [accessCount, setAccessCount] = useState(0);
             const [isVisible, setIsVisible] = useState(false);
+            const [isLoading, setIsLoading] = useState(true);
 
             useEffect(() => {
-                const initCounter = async () => {
+                const handleCounter = async () => {
                     try {
+                        setIsLoading(true);
+                       
+                        // 1. Verificar se já visitou nesta sessão
                         const hasVisited = sessionStorage.getItem(CONFIG.SESSION_KEY);
-                        
-                        // Criar cliente Supabase
-                        const supabase = createSupabaseClient();
-                        
+                       
                         if (!hasVisited) {
-                            // Usar a função RPC para incrementar - CORRIGIDO
-                            supabase.rpc('increment_page_view', { page_name: CONFIG.PAGE_NAME })
-                                .then(() => {
-                                    sessionStorage.setItem(CONFIG.SESSION_KEY, 'true');
-                                    console.log('Visita registrada para:', CONFIG.PAGE_NAME);
-                                });
-                        }
-
-                        // Buscar contagem atual - CORRIGIDO (usando a tabela correta)
-                        const fetchCount = async () => {
+                            // 2. Registrar novo acesso via RPC
                             try {
-                                const response = await fetch(
-                                    `${CONFIG.SUPABASE_URL}/rest/v1/page_views?page=eq.${CONFIG.PAGE_NAME}&select=count`,
-                                    {
-                                        headers: {
-                                            'apikey': CONFIG.SUPABASE_KEY,
-                                            'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
-                                            'Accept': 'application/json'
-                                        }
-                                    }
-                                );
-                                
-                                // Para o endpoint de count, Supabase retorna um array com objetos
+                                const response = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/rpc/increment_page_view`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'apikey': CONFIG.SUPABASE_KEY,
+                                        'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+                                    },
+                                    body: JSON.stringify({ page_name: CONFIG.PAGE_NAME })
+                                });
+                               
                                 if (response.ok) {
-                                    const data = await response.json();
-                                    console.log('Dados brutos da contagem:', data);
-                                    
-                                    // Se a resposta for um array, procurar pelo campo count
-                                    if (Array.isArray(data) && data.length > 0) {
-                                        // O Supabase retorna algo como [{count: 123}]
-                                        const count = data[0]?.count || 0;
-                                        setAccessCount(count);
-                                    } else if (typeof data === 'object' && data.count !== undefined) {
-                                        // Ou retorna direto {count: 123}
-                                        setAccessCount(data.count);
-                                    }
+                                    sessionStorage.setItem(CONFIG.SESSION_KEY, 'true');
+                                    console.log('✅ Visita registrada para:', CONFIG.PAGE_NAME);
+                                } else {
+                                    console.error('❌ Erro ao registrar visita:', await response.text());
                                 }
                             } catch (error) {
-                                console.error('Erro ao buscar contagem:', error);
-                                // Fallback: tentar método alternativo
-                                tryFallbackCount();
+                                console.error('❌ Erro na função RPC:', error);
                             }
-                        };
-
-                        // Método alternativo para buscar contagem
-                        const tryFallbackCount = async () => {
-                            try {
-                                const response = await fetch(
-                                    `${CONFIG.SUPABASE_URL}/rest/v1/page_views?page=eq.${CONFIG.PAGE_NAME}`,
-                                    {
-                                        headers: {
-                                            'apikey': CONFIG.SUPABASE_KEY,
-                                            'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
-                                        }
-                                    }
-                                );
-                                
-                                if (response.ok) {
-                                    const data = await response.json();
-                                    if (Array.isArray(data) && data.length > 0) {
-                                        // Pegar a primeira linha e verificar o campo views
-                                        const firstRow = data[0];
-                                        setAccessCount(firstRow.views || firstRow.count || 0);
+                        }
+                       
+                        // 3. Buscar contagem total
+                        try {
+                            const countResponse = await fetch(
+                                `${CONFIG.SUPABASE_URL}/rest/v1/page_views?page=eq.${CONFIG.PAGE_NAME}`,
+                                {
+                                    headers: {
+                                        'apikey': CONFIG.SUPABASE_KEY,
+                                        'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
+                                        'Accept': 'application/json'
                                     }
                                 }
-                            } catch (fallbackError) {
-                                console.error('Fallback também falhou:', fallbackError);
+                            );
+                           
+                            if (countResponse.ok) {
+                                const data = await countResponse.json();
+                                console.log('📊 Dados recebidos:', data);
+                               
+                                if (Array.isArray(data) && data.length > 0) {
+                                    const views = data[0].views || 0;
+                                    console.log('🎯 Contagem encontrada:', views);
+                                    setAccessCount(views);
+                                } else {
+                                    console.log('⚠️ Nenhum registro encontrado para:', CONFIG.PAGE_NAME);
+                                    setAccessCount(hasVisited ? 0 : 1);
+                                }
                             }
-                        };
-
-                        await fetchCount();
-                        setTimeout(() => setIsVisible(true), 800);
-                        
+                        } catch (error) {
+                            console.error('❌ Erro ao buscar contagem:', error);
+                        }
+                       
+                        setIsLoading(false);
+                        setTimeout(() => setIsVisible(true), 500);
+                       
                     } catch (error) {
-                        console.error('Erro inicializando contador:', error);
+                        console.error('❌ Erro geral no contador:', error);
+                        setIsLoading(false);
+                        setAccessCount(0);
                     }
                 };
-
-                initCounter();
+                handleCounter();
+               
+                // Atualiza a cada 30 segundos (opcional)
+                const interval = setInterval(fetchCount, 30000);
+                return () => clearInterval(interval);
             }, []);
 
+            const fetchCount = async () => {
+                try {
+                    const countResponse = await fetch(
+                        `${CONFIG.SUPABASE_URL}/rest/v1/page_views?page=eq.${CONFIG.PAGE_NAME}`,
+                        {
+                            headers: {
+                                'apikey': CONFIG.SUPABASE_KEY,
+                                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+                            }
+                        }
+                    );
+                   
+                    if (countResponse.ok) {
+                        const data = await countResponse.json();
+                        if (Array.isArray(data) && data.length > 0) {
+                            setAccessCount(data[0].views || 0);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Erro ao atualizar contador:', error);
+                }
+            };
+
+            if (isLoading) {
+                return (
+                    <div className="fixed bottom-4 right-4 z-50 opacity-70">
+                        <div className="flex items-center gap-2 text-[#5c3a4a] text-xs">
+                            <div className="flex items-center bg-[#0a0103]/50 px-2 py-1 rounded border border-[#2e0212]">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#8a0000] mr-1"></div>
+                                <span className="font-mono text-[10px]">carregando...</span>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
             return (
-                <div className={`fixed bottom-4 right-4 z-50 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
-                    <div className="flex items-center gap-2 text-[#5c3a4a] text-xs hover:text-[#8a0000] transition-colors cursor-default group">
-                        <div className="flex items-center bg-[#0a0103]/50 px-2 py-1 rounded border border-[#2e0212] group-hover:border-[#4a0404] transition-colors">
-                            <span className="mr-1 text-[10px] opacity-70">🔮</span>
-                            <span className="font-mono font-bold tracking-tight">{accessCount.toLocaleString()}</span>
+                <div className={`fixed bottom-4 right-4 z-50 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                    <div className="flex items-center gap-2 text-xs group">
+                        <div className="flex items-center bg-[#0a0103]/80 px-3 py-2 rounded border border-[#2e0212] group-hover:border-[#4a0404] transition-all duration-300 shadow-lg backdrop-blur-sm">
+                            <div className="flex flex-col items-end">
+                                <div className="flex items-center">
+                                    <span className="text-[10px] text-[#804d5e] mr-2 uppercase tracking-wider">acessos</span>
+                                    <span className="text-[#ffb3c1] font-mono font-bold text-sm drop-shadow-[0_0_4px_rgba(138,0,0,0.5)]">
+                                        {accessCount.toLocaleString('pt-BR')}
+                                    </span>
+                                </div>
+                                <div className="mt-1 w-full h-[1px] bg-gradient-to-r from-transparent via-[#4a0404] to-transparent opacity-50"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             );
         }
 
-        // Ícones
+        // Ícones SVG
         const Disc = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>;
         const SkipBack = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/></svg>;
         const SkipForward = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/></svg>;
@@ -223,7 +213,6 @@
           { id: '77GxLUUEcHo', title: 'Insomnia' },
           { id: 'bYM8iPn47yE', title: 'Eternal' },
           { id: 'bpxKOOUhLs8', title: 'Void' },
-          // Novas Faixas Adicionadas
           { id: 'y0AaKrZLFQo', title: 'Kletka' },
           { id: 'LVQi3iyx_Hc', title: 'Tears (Don\'t Believe)' },
           { id: 'ElcwzDwdYkA', title: 'Tancevat' },
@@ -244,7 +233,7 @@
           const [isAutoPlay, setIsAutoPlay] = useState(false);
           const playerRef = useRef(null);
           const playerContainerRef = useRef(null);
-          
+         
           const isAutoPlayRef = useRef(isAutoPlay);
           const currentVideoIndexRef = useRef(currentVideoIndex);
 
@@ -272,7 +261,7 @@
                   'rel': 0,
                   'fs': 1,
                   'modestbranding': 1,
-                  'playsinline': 1 
+                  'playsinline': 1
                 },
                 events: {
                   'onStateChange': onPlayerStateChange
@@ -295,9 +284,9 @@
                  const nextIndex = (currentVideoIndexRef.current + 1) % videos.length;
                  setCurrentVideoIndex(nextIndex);
                }
-             } else if (event.data === 1) { 
+             } else if (event.data === 1) {
                setIsPlaying(true);
-             } else if (event.data === 2) { 
+             } else if (event.data === 2) {
                setIsPlaying(false);
              }
           };
@@ -325,9 +314,8 @@
 
           return (
             <div className="min-h-screen pb-10">
-              
               <AccessCounter />
-              
+
               <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#4a0404] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
                 <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#2d004d] rounded-full blur-[120px] opacity-20 animate-pulse delay-1000"></div>
@@ -336,19 +324,16 @@
               </div>
 
               <div className="relative z-10 container mx-auto px-4 py-8 max-w-5xl">
-                
-                {/* Header Ajustado */}
                 <header className="mb-8 text-center border-b border-[#3d0a0a] pb-6">
                   <h1 className="gothic-font text-4xl sm:text-5xl md:text-7xl bg-gradient-to-r from-[#ff0033] via-[#b026ff] to-[#ff0033] bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(138,0,0,0.5)] tracking-wider">
-                    NOCTURNE
+                    VAMPIRE WAVES
                   </h1>
                   <p className="gothic-font text-[#a37996] mt-2 tracking-[0.2em] text-xs md:text-sm uppercase opacity-80">
-                    Sinfonia das Sombras
+                    Ondas Noturnas Eternas
                   </p>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                  
                   <div className="lg:col-span-2 space-y-4" ref={playerContainerRef}>
                     <div className="relative w-full aspect-video bg-black rounded-sm border-2 border-[#2d0a1e] shadow-[0_0_30px_rgba(45,0,20,0.6)] overflow-hidden group">
                       <div id="youtube-player" className="w-full h-full"></div>
@@ -356,7 +341,6 @@
                     </div>
 
                     <div className="bg-[#0f0205] border border-[#2e0212] p-4 md:p-6 rounded-sm shadow-lg flex flex-col gap-4">
-                      
                       <div className="flex items-center gap-4 w-full">
                         <div className={`p-3 rounded-full bg-[#1a0505] border border-[#3d0a0a] ${isPlaying ? 'animate-spin-slow' : ''}`}>
                           <Disc className="w-6 h-6 text-[#ff0033]" />
@@ -370,11 +354,11 @@
                       </div>
 
                       <div className="flex items-center justify-between border-t border-[#2e0212] pt-4">
-                        <button 
+                        <button
                           onClick={toggleAutoPlay}
                           className={`flex items-center gap-2 px-3 py-1 rounded-sm text-xs uppercase tracking-wider transition-all
-                            ${isAutoPlay 
-                              ? 'bg-[#2d0a1e] text-[#b026ff] border border-[#b026ff]/30 shadow-[0_0_10px_rgba(176,38,255,0.2)]' 
+                            ${isAutoPlay
+                              ? 'bg-[#2d0a1e] text-[#b026ff] border border-[#b026ff]/30 shadow-[0_0_10px_rgba(176,38,255,0.2)]'
                               : 'text-[#5c3a4a] hover:text-[#a0a0a0]'}
                           `}
                         >
@@ -383,17 +367,11 @@
                         </button>
 
                         <div className="flex items-center gap-4">
-                            <button 
-                            onClick={handlePrev}
-                            className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
-                            >
+                            <button onClick={handlePrev} className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full">
                             <SkipBack className="w-6 h-6" />
                             </button>
                             <div className="w-px h-6 bg-[#2e0212]"></div>
-                            <button 
-                            onClick={handleNext}
-                            className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full"
-                            >
+                            <button onClick={handleNext} className="p-3 text-[#5e2d3e] hover:text-[#ff0033] transition-colors hover:bg-[#1a0505] rounded-full">
                             <SkipForward className="w-6 h-6" />
                             </button>
                         </div>
@@ -405,27 +383,27 @@
                     <div className="bg-[#0a0103]/80 backdrop-blur-sm border border-[#2e0212] h-[500px] lg:h-[600px] flex flex-col rounded-sm">
                       <div className="p-4 border-b border-[#2e0212] bg-[#120205]">
                         <h3 className="gothic-font text-xl text-[#b026ff] flex items-center gap-2">
-                          <Music className="w-4 h-4" /> Playlist Gótica
+                          <Music className="w-4 h-4" /> Playlist Vampírica
                         </h3>
                         <p className="text-xs text-gray-500 mt-1">{videos.length} Faixas • Clique para tocar</p>
                       </div>
-                      
+                     
                       <div className="overflow-y-auto flex-1 p-2 space-y-2">
                         {videos.map((video, index) => (
-                          <div 
+                          <div
                             key={video.id}
                             onClick={() => handleVideoSelect(index)}
                             className={`
                               group flex items-center gap-3 p-2 rounded-sm cursor-pointer border border-transparent transition-all duration-300
-                              ${currentVideoIndex === index 
-                                ? 'bg-[#1f050a] border-[#4a0404] shadow-[0_0_10px_rgba(138,0,0,0.2)]' 
+                              ${currentVideoIndex === index
+                                ? 'bg-[#1f050a] border-[#4a0404] shadow-[0_0_10px_rgba(138,0,0,0.2)]'
                                 : 'hover:bg-[#120408] hover:border-[#2e0212]'}
                             `}
                           >
                             <div className="relative w-16 h-12 flex-shrink-0 overflow-hidden rounded-sm border border-[#1f050a]">
-                              <img 
-                                src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`} 
-                                alt="thumbnail" 
+                              <img
+                                src={`https://img.youtube.com/vi/${video.id}/mqdefault.jpg`}
+                                alt="thumbnail"
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
                               />
                               {currentVideoIndex === index && (
@@ -434,7 +412,7 @@
                                 </div>
                               )}
                             </div>
-                            
+                           
                             <div className="flex-1 min-w-0">
                               <p className={`serif-font text-sm truncate ${currentVideoIndex === index ? 'text-[#ffb3c1]' : 'text-[#a0a0a0] group-hover:text-[#decbcb]'}`}>
                                 {video.title}
@@ -448,7 +426,6 @@
                       </div>
                     </div>
                   </div>
-
                 </div>
 
                 <footer className="text-center py-8 border-t border-[#3d0a0a] mt-8">
@@ -458,7 +435,6 @@
                     <Heart className="w-3 h-3" />
                   </div>
                 </footer>
-
               </div>
             </div>
           );
