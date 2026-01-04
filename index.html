@@ -40,7 +40,91 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        const CONFIG = {
+            SUPABASE_URL: 'https://rbygxkbewzknvjjhxdvw.supabase.co',
+            SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJieWd4a2Jld3prbnZqamh4ZHZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMDcxNjQsImV4cCI6MjA4MTU4MzE2NH0.YrHF9HEGo6yv9MyNsPzFgBhaAB1DRh2SLU8f7L6s1nY',
+            PAGE_NAME: 'nocturne-player',
+            SESSION_KEY: 'page_visit_nocturne'
+        };
+
         const { useState, useEffect, useRef } = React;
+
+        // Componente do Contador de Acessos
+        function AccessCounter() {
+            const [accessCount, setAccessCount] = useState(0);
+            const [isVisible, setIsVisible] = useState(false);
+
+            useEffect(() => {
+                // Verificar se já visitou nesta sessão
+                const hasVisited = sessionStorage.getItem(CONFIG.SESSION_KEY);
+                
+                if (!hasVisited) {
+                    // Marcar como visitado
+                    sessionStorage.setItem(CONFIG.SESSION_KEY, 'true');
+                    
+                    // Registrar acesso no Supabase
+                    registerAccess();
+                }
+
+                // Buscar contagem total de acessos
+                fetchAccessCount();
+                
+                // Mostrar contador após carregar
+                setTimeout(() => setIsVisible(true), 1000);
+            }, []);
+
+            const registerAccess = async () => {
+                try {
+                    await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/page_visits`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'apikey': CONFIG.SUPABASE_KEY,
+                            'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`,
+                            'Prefer': 'return=minimal'
+                        },
+                        body: JSON.stringify({
+                            page_name: CONFIG.PAGE_NAME,
+                            visited_at: new Date().toISOString()
+                        })
+                    });
+                } catch (error) {
+                    console.log('Erro ao registrar acesso:', error);
+                }
+            };
+
+            const fetchAccessCount = async () => {
+                try {
+                    const response = await fetch(
+                        `${CONFIG.SUPABASE_URL}/rest/v1/page_visits?page_name=eq.${CONFIG.PAGE_NAME}&select=count`,
+                        {
+                            headers: {
+                                'apikey': CONFIG.SUPABASE_KEY,
+                                'Authorization': `Bearer ${CONFIG.SUPABASE_KEY}`
+                            }
+                        }
+                    );
+                    
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        setAccessCount(data[0].count || 0);
+                    }
+                } catch (error) {
+                    console.log('Erro ao buscar contador:', error);
+                }
+            };
+
+            return (
+                <div className={`fixed bottom-4 right-4 z-50 transition-opacity duration-1000 ${isVisible ? 'opacity-100' : 'opacity-0'}`}>
+                    <div className="flex items-center gap-2 text-[#5c3a4a] text-xs hover:text-[#8a0000] transition-colors cursor-default">
+                        <div className="flex items-center">
+                            <span className="mr-1 text-[10px] opacity-70">🔮</span>
+                            <span className="font-mono">{accessCount.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
 
         // Ícones
         const Disc = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>;
@@ -172,6 +256,8 @@
 
           return (
             <div className="min-h-screen pb-10">
+              
+              <AccessCounter />
               
               <div className="fixed inset-0 pointer-events-none z-0">
                 <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#4a0404] rounded-full blur-[120px] opacity-20 animate-pulse"></div>
